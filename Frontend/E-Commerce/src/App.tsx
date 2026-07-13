@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { UIContextProvider } from "./context/UIContext";
 
 const PUBLIC_ROUTES = ['/login', '/forgot-password', '/otp-verify', '/reset-password'];
