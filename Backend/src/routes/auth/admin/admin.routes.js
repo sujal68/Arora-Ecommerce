@@ -4,8 +4,14 @@ const { authMiddleware } = require('../../../middleware/auth.middleware');
 const adminRouter = express.Router();
 
 adminRouter.post('/registerAdmin', registerAdmins);
-adminRouter.post('/loginAdmin', loginAdmin);
-adminRouter.post('/Forgotpassword', ForgotPassword);
+adminRouter.post('/loginAdmin', (req, res, next) => {
+    console.log("[LOG] [ROUTE] Entered /loginAdmin route");
+    next();
+}, loginAdmin);
+adminRouter.post('/Forgotpassword', (req, res, next) => {
+    console.log("[LOG] [ROUTE] Entered /Forgotpassword route");
+    next();
+}, ForgotPassword);
 adminRouter.post('/VerifyOtp', VerifyOtp);
 adminRouter.post('/NewChangePassword', NewChangePassword)
 // rest APIs

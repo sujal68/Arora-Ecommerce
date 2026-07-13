@@ -38,16 +38,22 @@ module.exports.registerAdmins = async (req, res) => {
 
 module.exports.loginAdmin = async (req, res) => {
     try {
+        console.log("[LOG] [CONTROLLER] Entered loginAdmin controller, email:", req.body.email);
+        console.log("[LOG] [SERVICE] Calling FetchSingleAdmin...");
         const admin = await adminAuthService.FetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, false);
-        console.log("ADMIN FOUND:", admin);
+        console.log("[LOG] [SERVICE] FetchSingleAdmin returned admin:", admin ? "Found" : "Not Found");
         if (!admin) {
             triggerNotification(`Failed admin login attempt (email not found): ${req.body.email}`, 'warn');
+            console.log("[LOG] [CONTROLLER] Admin not found, returning 400");
             return res.json(successResponse(statusCode.BAD_REQUEST, true, MSG.Admin_Not_Found));
         }
 
+        console.log("[LOG] [BCRYPT] Calling bcrypt.compare...");
         const isPasswordMatch = await bcrypt.compare(req.body.password, admin.password);
+        console.log("[LOG] [BCRYPT] bcrypt.compare returned match result:", isPasswordMatch);
         if (!isPasswordMatch) {
             triggerNotification(`Failed admin login attempt (wrong password): ${admin.email}`, 'warn');
+            console.log("[LOG] [CONTROLLER] Incorrect password, returning 400");
             return res.json(successResponse(statusCode.BAD_REQUEST, true, MSG.Admin_INCORRECT_PAASWORD));
         }
 
@@ -55,42 +61,54 @@ module.exports.loginAdmin = async (req, res) => {
             id: admin._id,
             isAdmin: true,
         }
+        console.log("[LOG] [JWT] Calling JWT.sign...");
         const Tocken = JWT.sign(payload, process.env.JWT_SECRET_KEY)
+        console.log("[LOG] [JWT] JWT.sign generated token of length:", Tocken.length);
 
         triggerNotification(`Administrator logged in: ${admin.email}`, 'admin');
 
+        console.log("[LOG] [RESPONSE] Returning successResponse (res.json)");
         return res.json(successResponse(statusCode.OK, false, MSG.Admin_Login_Success, { token: Tocken }));
     } catch (error) {
-        console.log("Something Went Wrong!!", error);
+        console.error("[LOG] [ERROR] Error in loginAdmin:", error);
         return res.json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.Something_Went_Wrong));
     }
 }
 
 module.exports.ForgotPassword = async (req, res) => {
     try {
+        console.log("[LOG] [CONTROLLER] Entered ForgotPassword controller, email:", req.body.email);
+        console.log("[LOG] [SERVICE] Calling FetchSingleAdmin...");
         const admin = await adminAuthService.FetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, false);
+        console.log("[LOG] [SERVICE] FetchSingleAdmin returned admin:", admin ? "Found" : "Not Found");
 
         if (!admin) {
+            console.log("[LOG] [CONTROLLER] Admin not found, returning 400");
             return res
                 .json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Admin_Not_Found));
         }
 
+        console.log("[LOG] [CONTROLLER] Current admin.attempt_expire:", admin.attempt_expire, "admin.attempt:", admin.attempt);
         if (!admin.attempt_expire || new Date(admin.attempt_expire).getTime() < Date.now()) {
+            console.log("[LOG] [CONTROLLER] Attempt expired, resetting admin.attempt to 0");
             admin.attempt = 0;
         }
 
         if (admin.attempt >= 3) {
+            console.log("[LOG] [CONTROLLER] Too many attempts, returning 400");
             return res
                 .json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Many_Time_Otp));
         }
 
         const OTP = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log("[LOG] [CONTROLLER] Generated OTP:", OTP);
 
         try {
+            console.log("[LOG] [MAILER] Calling sendEmail...");
             await sendEmail(admin.email, OTP);
-            console.log("EMAIL SENT OK to:", admin.email);
+            console.log("[LOG] [MAILER] sendEmail call succeeded");
         } catch (mailError) {
-            console.error("EMAIL FAILED:", mailError.message);
+            console.error("[LOG] [ERROR] sendEmail threw error:", mailError.message);
             return res.json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, "Failed to send OTP email: " + mailError.message));
         }
 
@@ -99,18 +117,21 @@ module.exports.ForgotPassword = async (req, res) => {
         const expireOtpTime = new Date(Date.now() + 2 * 60 * 1000);
         const attemptExpireTime = new Date(Date.now() + 60 * 60 * 1000);
 
+        console.log("[LOG] [SERVICE] Calling updateAdmin with verification parameters...");
         await adminAuthService.updateAdmin(admin._id, {
             attempt: admin.attempt,
             OTP: OTP,
             Otp_expire_time: expireOtpTime,
             attempt_expire: attemptExpireTime
         });
+        console.log("[LOG] [SERVICE] updateAdmin finished");
 
+        console.log("[LOG] [RESPONSE] Returning successResponse for OTP sent");
         return res.status(statusCode.OK)
             .json(successResponse(statusCode.OK, false, MSG.Otp_send_successFully));
 
     } catch (error) {
-        console.log("Something Went Wrong!!", error);
+        console.error("[LOG] [ERROR] Error in ForgotPassword:", error);
         return res
             .json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.Something_Went_Wrong));
     }

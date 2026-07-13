@@ -16,18 +16,23 @@ app.use(express.json());
 // Track active sessions / visitors in MongoDB
 const Session = require('./model/session.model');
 app.use(async (req, res, next) => {
+    console.log("[LOG] [MIDDLEWARE] Session tracking middleware started");
     const sessionId = req.headers['x-session-id'];
+    console.log("[LOG] [MIDDLEWARE] session_id from headers:", sessionId);
     if (sessionId) {
         try {
+            console.log("[LOG] [DATABASE] Calling Session.findOneAndUpdate...");
             await Session.findOneAndUpdate(
                 { session_id: sessionId },
                 { last_active: new Date() },
                 { upsert: true, new: true }
             );
+            console.log("[LOG] [DATABASE] Session.findOneAndUpdate completed");
         } catch (e) {
-            console.error('Session update error', e);
+            console.error('[LOG] [ERROR] Session update error:', e);
         }
     }
+    console.log("[LOG] [MIDDLEWARE] Calling next()");
     next();
 });
 
