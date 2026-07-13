@@ -1,6 +1,39 @@
 const nodeMailer = require("nodemailer");
+let sgMail;
 
-const sendEmail = async (to, OTP) => {
+try {
+    sgMail = require("@sendgrid/mail");
+} catch (err) {
+    console.warn("[MAILER] @sendgrid/mail not installed. Falling back to SMTP.");
+}
+
+const buildEmailContent = (OTP) => ({
+    subject: "Your OTP - Arova Commerce",
+    html: `<h2>Your OTP is: <strong>${OTP}</strong></h2><p>This OTP expires in 2 minutes.</p>`,
+});
+
+const sendWithSendGrid = async (to, OTP) => {
+    if (!process.env.SENDGRID_API_KEY) {
+        throw new Error("SENDGRID_API_KEY is not configured");
+    }
+    if (!process.env.EMAIL_USER) {
+        throw new Error("EMAIL_USER is not configured for SendGrid sender");
+    }
+
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const msg = {
+        to,
+        from: process.env.EMAIL_USER,
+        ...buildEmailContent(OTP),
+    };
+
+    console.log("[MAILER] Sending email with SendGrid...");
+    const result = await sgMail.send(msg);
+    console.log("[MAILER] SendGrid response:", Array.isArray(result) ? result[0].statusCode : result.statusCode);
+    return result;
+};
+
+const sendWithGmail = async (to, OTP) => {
     console.log("[MAILER] EMAIL_USER:", process.env.EMAIL_USER ? "SET" : "NOT SET");
     console.log("[MAILER] EMAIL_PASSWORD:", process.env.EMAIL_PASSWORD ? "SET (length: " + process.env.EMAIL_PASSWORD.length + ")" : "NOT SET");
 
@@ -31,8 +64,7 @@ const sendEmail = async (to, OTP) => {
     const mailOptions = {
         from: `"Arova Commerce" <${process.env.EMAIL_USER}>`,
         to,
-        subject: "Your OTP - Arova Commerce",
-        html: `<h2>Your OTP is: <strong>${OTP}</strong></h2><p>This OTP expires in 2 minutes.</p>`,
+        ...buildEmailContent(OTP),
     };
 
     try {
@@ -52,6 +84,13 @@ const sendEmail = async (to, OTP) => {
         });
         throw err;
     }
+};
+
+const sendEmail = async (to, OTP) => {
+    if (process.env.SENDGRID_API_KEY && sgMail) {
+        return sendWithSendGrid(to, OTP);
+    }
+    return sendWithGmail(to, OTP);
 };
 
 module.exports = { sendEmail };
