@@ -13,6 +13,9 @@ const buildEmailContent = (OTP) => ({
 });
 
 const sendWithSendGrid = async (to, OTP) => {
+    console.log("[MAILER] Provider selected: sendgrid");
+    console.log("[MAILER] SENDGRID_API_KEY:", process.env.SENDGRID_API_KEY ? "SET" : "NOT SET");
+    console.log("[MAILER] EMAIL_USER:", process.env.EMAIL_USER ? "SET" : "NOT SET");
     if (!process.env.SENDGRID_API_KEY) {
         throw new Error("SENDGRID_API_KEY is not configured");
     }
