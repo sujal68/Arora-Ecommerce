@@ -40,8 +40,8 @@ const adminSchema = mongoose.Schema({
         default: null
     },
     OTP: {
-        type: Number,
-        default: 0,
+        type: String,
+        default: null,
     },
     Otp_expire_time: {
         type: Date,

@@ -89,7 +89,7 @@ module.exports.forgotPassword = async (req, res) => {
             return res.status(statusCodes.BAD_REQUEST).json(errorResponse(statusCodes.BAD_REQUEST, true, MSG.Many_Time_Otp));
         }
 
-        const OTP = Math.floor(100000 + Math.random() * 900000);
+        const OTP = Math.floor(100000 + Math.random() * 900000).toString();
 
         await sendEmail(req.body.email, OTP);
 
@@ -130,11 +130,11 @@ module.exports.verifyOtp = async (req, res) => {
 
         await userAuthService.updateUser(user.id, { verify_attempt: user.verify_attempt, verify_attempt_expire: new Date(Date.now() + 1000 * 60 * 60) });
 
-        if (req.body.OTP != user.OTP) {
+        if (req.body.OTP.toString() !== user.OTP.toString()) {
             return res.status(statusCodes.BAD_REQUEST).json(errorResponse(statusCodes.BAD_REQUEST, true, MSG.Invalid_Otp));
         }
 
-        await userAuthService.updateUser(user.id, { OTP: 0, OTP_Expire_time: null, verify_attempt: user.verify_attempt, verify_attempt_expire: new Date(Date.now() + 1000 * 60 * 60) });
+        await userAuthService.updateUser(user.id, { OTP: null, OTP_Expire_time: null, verify_attempt: 0, verify_attempt_expire: null });
 
         return res.status(statusCodes.OK).json(successResponse(statusCodes.OK, false, MSG.VERIFY_OTP));
     } catch (error) {
