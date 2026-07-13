@@ -87,7 +87,7 @@ export const AdminOtpVerify = async (OTP: string) => {
     try {
         const email = sessionStorage.getItem("resetEmail") || "";
         console.log("[LOG] [FRONTEND] AdminOtpVerify called. Email:", email, "OTP:", OTP);
-        const res = await api.post(`/auth/admin/VerifyOtp`, { email, OTP: Number(OTP) });
+        const res = await api.post(`/auth/admin/VerifyOtp`, { email, OTP: OTP });
         console.log("[LOG] [FRONTEND] AdminOtpVerify post success, response data:", res.data);
         return res.data;
     } catch (error: any) {

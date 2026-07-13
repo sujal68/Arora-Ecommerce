@@ -1,19 +1,30 @@
 const nodeMailer = require("nodemailer");
 
 const sendEmail = async (to, OTP) => {
-    console.log("[MAILER] EMAIL_USER:", process.env.EMAIL_USER ? "SET" : "NOT SET");
-    console.log("[MAILER] EMAIL_PASSWORD:", process.env.EMAIL_PASSWORD ? "SET (length: " + process.env.EMAIL_PASSWORD.length + ")" : "NOT SET");
+    const emailUser = process.env.EMAIL_USER;
+    const emailPassword = process.env.EMAIL_PASSWORD;
+
+    console.log("[MAILER] EMAIL_USER:", emailUser ? "SET" : "NOT SET");
+    console.log("[MAILER] EMAIL_PASSWORD:", emailPassword ? "SET (length: " + emailPassword.length + ")" : "NOT SET");
+
+    if (!emailUser || !emailPassword) {
+        const missingErr = new Error("EMAIL_USER or EMAIL_PASSWORD environment variables are not set on the server.");
+        console.error("[MAILER] Error: ", missingErr.message);
+        throw missingErr;
+    }
 
     const transporter = nodeMailer.createTransport({
         service: "gmail",
         auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD,
+            user: emailUser,
+            pass: emailPassword,
         },
+        connectionTimeout: 5000, // 5 seconds connection timeout
+        socketTimeout: 5000,     // 5 seconds socket timeout
     });
 
     const mailOptions = {
-        from: `"Arova Commerce" <${process.env.EMAIL_USER}>`,
+        from: `"Arova Commerce" <${emailUser}>`,
         to,
         subject: "Your OTP - Arova Commerce",
         html: `<h2>Your OTP is: <strong>${OTP}</strong></h2><p>This OTP expires in 2 minutes.</p>`,
