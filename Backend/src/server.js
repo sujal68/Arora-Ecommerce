@@ -10,7 +10,6 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id'],
 }));
-app.options('*', cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
