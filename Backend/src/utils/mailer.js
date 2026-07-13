@@ -14,7 +14,9 @@ const sendEmail = async (to, OTP) => {
     }
 
     const transporter = nodeMailer.createTransport({
-        service: "gmail",
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // false for 587 (STARTTLS)
         auth: {
             user: emailUser,
             pass: emailPassword,
