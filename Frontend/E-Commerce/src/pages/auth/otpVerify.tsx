@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { AdminOtpVerify } from '../../services/auth/authService'
+import { AdminOtpVerify, forgotPassword } from '../../services/auth/authService'
 import { toast } from 'react-toastify'
 
 export default function OtpVerifyPage() {
@@ -106,19 +106,24 @@ export default function OtpVerifyPage() {
     }
 
     const handleResend = async () => {
-        console.log("[LOG] [FRONTEND] Resend OTP Clicked");
+        const email = sessionStorage.getItem('resetEmail') || ''
+        if (!email) { toast.error('Session expired. Please go back and enter your email again.'); return; }
         setIsLoading(true)
         try {
-            await new Promise(r => setTimeout(r, 1200))
-            setOtp(['', '', '', '', '', ''])
-            setTimer(120)
-            setCanResend(false)
-            inputRefs.current[0]?.focus()
-            console.log("[LOG] [FRONTEND] OTP Resent and input reset completed");
+            const data = await forgotPassword(email)
+            const message = data?.message || data?.massage || 'Something went wrong.'
+            if (data?.status === 200) {
+                setOtp(['', '', '', '', '', ''])
+                setTimer(120)
+                setCanResend(false)
+                inputRefs.current[0]?.focus()
+                toast.success('OTP resent successfully!')
+            } else {
+                toast.error(message)
+            }
         } catch (error: any) {
-            console.error("[LOG] [FRONTEND] Exception caught in handleResend:", error);
+            toast.error(error?.message || 'Failed to resend OTP.')
         } finally {
-            console.log("[LOG] [FRONTEND] Setting isLoading to false");
             setIsLoading(false)
         }
     }

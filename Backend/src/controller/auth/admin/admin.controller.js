@@ -28,7 +28,6 @@ module.exports.registerAdmins = async (req, res) => {
         }
 
         await triggerNotification(`New administrator registered: ${newAdmin.first_name} ${newAdmin.last_name} (${newAdmin.email})`, 'admin');
-        await sendEmail(req.body.email, password)
         return res.json(successResponse(statusCode.CREATED, false, MSG.Admin_Registration_Success));
     } catch (error) {
         console.log("Something Went Wrong!!", error);
