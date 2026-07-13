@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const BASE = "http://localhost:6800/api/auth";
+const BASE = "https://arora-ecommerce.onrender.com/api/auth";
 const ADMIN_BASE = `${BASE}/admin`;
 
 // ─── Axios instance with JWT interceptor ──────────────────────────────────────
-export const api = axios.create({ baseURL: "http://localhost:6800/api" });
+export const api = axios.create({ baseURL: import.meta.env.VITE_API_URL, });
 
 const getOrCreateSessionId = () => {
     let sid = sessionStorage.getItem('admin_session_id');

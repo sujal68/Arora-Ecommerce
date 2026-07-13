@@ -151,7 +151,7 @@ CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
 # Frontend Configuration (Client-side usage)
-VITE_API_URL=http://localhost:6800/api
+VITE_API_URL=https://arora-ecommerce.onrender.com/api
 ```
 
 > [!WARNING]
@@ -188,7 +188,7 @@ Open a new terminal session and navigate to the `Frontend/E-Commerce` directory:
 cd Frontend/E-Commerce
 npm install
 ```
-*   Ensure that the backend API endpoint points to the correct port (e.g., `http://localhost:6800/api` in services configuration).
+*   Ensure that the backend API endpoint points to the correct port (e.g., `https://arora-ecommerce.onrender.com/api` in services configuration).
 *   Launch the client application:
 ```bash
 npm run dev
