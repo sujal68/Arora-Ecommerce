@@ -175,13 +175,14 @@ module.exports.NewChangePassword = async (req, res) => {
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.ADMIN_PASSWORD_UPDATED));
 
     } catch (error) {
-        console.log("Error : ", err);
+        console.log("Error : ", error);
+        return res.json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.Something_Went_Wrong));
     }
 }
 
 module.exports.fetchAdmins = async (req, res) => {
     try {
-        if (req.user) {
+        if (!req.admin) {
             return res.json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Unauthorized_Access));
         }
         const allAdmins = await adminAuthService.FetchAllAdmin();
@@ -194,7 +195,7 @@ module.exports.fetchAdmins = async (req, res) => {
 
 module.exports.deleteAdmin = async (req, res) => {
     try {
-        if (req.user) {
+        if (!req.admin) {
             return res.json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Unauthorized_Access))
         }
         console.log(req.query);
@@ -215,7 +216,7 @@ module.exports.deleteAdmin = async (req, res) => {
 
 module.exports.updateAdmin = async (req, res) => {
     try {
-        if (req.user) {
+        if (!req.admin) {
             return res.json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Unauthorized_Access));
         };
 
@@ -235,7 +236,7 @@ module.exports.updateAdmin = async (req, res) => {
 
 module.exports.activeOrInActiveAdmins = async (req, res) => {
     try {
-        if (req.user) {
+        if (!req.admin) {
             return res.json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Unauthorized_Access));
         }
         console.log(req.query);
@@ -257,7 +258,7 @@ module.exports.activeOrInActiveAdmins = async (req, res) => {
 
 module.exports.adminProfile = async (req, res) => {
     try {
-        if (req.user) {
+        if (!req.admin) {
             return res.json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Unauthorized_Access));
         }
         console.log(req.admin);
@@ -271,7 +272,7 @@ module.exports.adminProfile = async (req, res) => {
 
 module.exports.changePassword = async (req, res) => {
     try {
-        if (req.user) {
+        if (!req.admin) {
             return res.json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Unauthorized_Access));
         }
         console.log("tick controller come", req.admin.id)

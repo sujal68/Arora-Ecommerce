@@ -1,10 +1,9 @@
 import axios from "axios";
 
-const BASE = "https://arora-ecommerce.onrender.com/api/auth";
-const ADMIN_BASE = `${BASE}/admin`;
-
 // ─── Axios instance with JWT interceptor ──────────────────────────────────────
 export const api = axios.create({ baseURL: import.meta.env.VITE_API_URL, });
+
+const ADMIN_BASE = `${import.meta.env.VITE_API_URL}/auth/admin`;
 
 const getOrCreateSessionId = () => {
     let sid = sessionStorage.getItem('admin_session_id');
@@ -43,7 +42,7 @@ export const handleError = (error: any, fallback: string) =>
 
 export const adminLogin = async (data: { email: string; password: string }) => {
     try {
-        const res = await axios.post(`${ADMIN_BASE}/loginAdmin`, data);
+        const res = await api.post(`/auth/admin/loginAdmin`, data);
         return res.data;
     } catch (error: any) {
         return handleError(error, "Unable to login. Please try again.");
@@ -52,7 +51,7 @@ export const adminLogin = async (data: { email: string; password: string }) => {
 
 export const forgotPassword = async (email: string) => {
     try {
-        const res = await axios.post(`${ADMIN_BASE}/Forgotpassword`, { email });
+        const res = await api.post(`/auth/admin/Forgotpassword`, { email });
         return res.data;
     } catch (error: any) {
         return handleError(error, "Failed to send OTP. Please try again.");
@@ -62,7 +61,7 @@ export const forgotPassword = async (email: string) => {
 export const AdminOtpVerify = async (OTP: string) => {
     try {
         const email = sessionStorage.getItem("resetEmail") || "";
-        const res = await axios.post(`${ADMIN_BASE}/VerifyOtp`, { email, OTP: Number(OTP) });
+        const res = await api.post(`/auth/admin/VerifyOtp`, { email, OTP: Number(OTP) });
         return res.data;
     } catch (error: any) {
         return handleError(error, "OTP verification failed. Please try again.");
@@ -72,7 +71,7 @@ export const AdminOtpVerify = async (OTP: string) => {
 export const ResetPassword = async (new_password: string) => {
     try {
         const email = sessionStorage.getItem("resetEmail") || "";
-        const res = await axios.post(`${ADMIN_BASE}/NewChangePassword`, { email, new_password });
+        const res = await api.post(`/auth/admin/NewChangePassword`, { email, new_password });
         return res.data;
     } catch (error: any) {
         return handleError(error, "Password reset failed. Please try again.");
@@ -228,20 +227,20 @@ export const fetchDashboardStats = async () => {
                 api.get(`/extra-category/`),
             ]);
 
-        const admins   = adminsRes.status   === 'fulfilled' ? adminsRes.value.data     : null;
-        const users    = usersRes.status    === 'fulfilled' ? usersRes.value.data      : null;
-        const products = productsRes.status === 'fulfilled' ? productsRes.value.data   : null;
-        const cats     = categoriesRes.status === 'fulfilled' ? categoriesRes.value.data : null;
-        const subCats  = subCatRes.status   === 'fulfilled' ? subCatRes.value.data     : null;
-        const extraCats = extraCatRes.status === 'fulfilled' ? extraCatRes.value.data  : null;
+        const admins = adminsRes.status === 'fulfilled' ? adminsRes.value.data : null;
+        const users = usersRes.status === 'fulfilled' ? usersRes.value.data : null;
+        const products = productsRes.status === 'fulfilled' ? productsRes.value.data : null;
+        const cats = categoriesRes.status === 'fulfilled' ? categoriesRes.value.data : null;
+        const subCats = subCatRes.status === 'fulfilled' ? subCatRes.value.data : null;
+        const extraCats = extraCatRes.status === 'fulfilled' ? extraCatRes.value.data : null;
 
-        const adminCount    = Array.isArray(admins?.result)    ? admins.result.length    : 0;
-        const userCount     = Array.isArray(users?.result)     ? users.result.length     : 0;
-        const productCount  = products?.result?.total          ?? 0;
-        const catCount      = Array.isArray(cats?.result)      ? cats.result.length      : 0;
-        const subCatCount   = Array.isArray(subCats?.result)   ? subCats.result.length   : 0;
+        const adminCount = Array.isArray(admins?.result) ? admins.result.length : 0;
+        const userCount = Array.isArray(users?.result) ? users.result.length : 0;
+        const productCount = products?.result?.total ?? 0;
+        const catCount = Array.isArray(cats?.result) ? cats.result.length : 0;
+        const subCatCount = Array.isArray(subCats?.result) ? subCats.result.length : 0;
         const extraCatCount = Array.isArray(extraCats?.result) ? extraCats.result.length : 0;
-        const totalCats     = catCount + subCatCount + extraCatCount;
+        const totalCats = catCount + subCatCount + extraCatCount;
 
         // active users
         const activeUsers = Array.isArray(users?.result)
@@ -252,19 +251,19 @@ export const fetchDashboardStats = async () => {
         const allProducts: any[] = products?.result?.products ?? [];
 
         return {
-            admins:     adminCount,
-            users:      userCount,
+            admins: adminCount,
+            users: userCount,
             activeUsers,
-            products:   productCount,
+            products: productCount,
             categories: totalCats,
             catCount,
             subCatCount,
             extraCatCount,
             topProducts: allProducts.slice(0, 5),
             // orders not in backend yet
-            pending:    0,
-            earnings:   0,
-            revenue:    0,
+            pending: 0,
+            earnings: 0,
+            revenue: 0,
         };
     } catch (error: any) {
         return null;

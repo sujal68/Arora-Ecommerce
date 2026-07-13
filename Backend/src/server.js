@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT;
 
 app.use(cors());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Track active sessions / visitors in MongoDB
