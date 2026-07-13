@@ -15,16 +15,27 @@ const getOrCreateSessionId = () => {
 };
 
 api.interceptors.request.use((config) => {
+    console.log("[LOG] [AXIOS] Request Interceptor - URL:", config.url, "Method:", config.method);
     const token = localStorage.getItem("adminAuthToken");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-    config.headers['x-session-id'] = getOrCreateSessionId();
+    if (token) {
+        console.log("[LOG] [AXIOS] Adding Bearer Token to headers");
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    const sessionId = getOrCreateSessionId();
+    console.log("[LOG] [AXIOS] Adding session-id to headers:", sessionId);
+    config.headers['x-session-id'] = sessionId;
     return config;
 });
 
 api.interceptors.response.use(
-    (res) => res,
+    (res) => {
+        console.log("[LOG] [AXIOS] Response Interceptor (Success) - URL:", res.config.url, "Status:", res.status);
+        return res;
+    },
     (error) => {
+        console.error("[LOG] [AXIOS] Response Interceptor (Error) - URL:", error?.config?.url, "Status:", error?.response?.status, "Message:", error?.message);
         if (error?.response?.status === 401) {
+            console.log("[LOG] [AXIOS] Unauthorized (401). Clearing token and redirecting to login...");
             localStorage.removeItem("adminAuthToken");
             window.location.href = "/login";
         }
@@ -33,8 +44,16 @@ api.interceptors.response.use(
 );
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
-export const handleError = (error: any, fallback: string) =>
-    error?.response?.data || { status: 500, massage: fallback };
+export const handleError = (error: any, fallback: string) => {
+    console.log("[LOG] [FRONTEND] handleError called. Error object:", error);
+    const extractedData = error?.response?.data;
+    if (extractedData) {
+        console.log("[LOG] [FRONTEND] Extracted error data from response:", extractedData);
+        return extractedData;
+    }
+    console.log("[LOG] [FRONTEND] No response data found, returning fallback:", fallback);
+    return { status: 500, massage: fallback };
+};
 
 // =============================================================================
 // AUTH — Public (no token needed)
@@ -42,18 +61,24 @@ export const handleError = (error: any, fallback: string) =>
 
 export const adminLogin = async (data: { email: string; password: string }) => {
     try {
+        console.log("[LOG] [FRONTEND] adminLogin called with email:", data.email);
         const res = await api.post(`/auth/admin/loginAdmin`, data);
+        console.log("[LOG] [FRONTEND] adminLogin post success, response data:", res.data);
         return res.data;
     } catch (error: any) {
+        console.error("[LOG] [FRONTEND] adminLogin post failed:", error);
         return handleError(error, "Unable to login. Please try again.");
     }
 };
 
 export const forgotPassword = async (email: string) => {
     try {
+        console.log("[LOG] [FRONTEND] forgotPassword called with email:", email);
         const res = await api.post(`/auth/admin/Forgotpassword`, { email });
+        console.log("[LOG] [FRONTEND] forgotPassword post success, response data:", res.data);
         return res.data;
     } catch (error: any) {
+        console.error("[LOG] [FRONTEND] forgotPassword post failed:", error);
         return handleError(error, "Failed to send OTP. Please try again.");
     }
 };
@@ -61,9 +86,12 @@ export const forgotPassword = async (email: string) => {
 export const AdminOtpVerify = async (OTP: string) => {
     try {
         const email = sessionStorage.getItem("resetEmail") || "";
+        console.log("[LOG] [FRONTEND] AdminOtpVerify called. Email:", email, "OTP:", OTP);
         const res = await api.post(`/auth/admin/VerifyOtp`, { email, OTP: Number(OTP) });
+        console.log("[LOG] [FRONTEND] AdminOtpVerify post success, response data:", res.data);
         return res.data;
     } catch (error: any) {
+        console.error("[LOG] [FRONTEND] AdminOtpVerify post failed:", error);
         return handleError(error, "OTP verification failed. Please try again.");
     }
 };
@@ -71,9 +99,12 @@ export const AdminOtpVerify = async (OTP: string) => {
 export const ResetPassword = async (new_password: string) => {
     try {
         const email = sessionStorage.getItem("resetEmail") || "";
+        console.log("[LOG] [FRONTEND] ResetPassword called. Email:", email);
         const res = await api.post(`/auth/admin/NewChangePassword`, { email, new_password });
+        console.log("[LOG] [FRONTEND] ResetPassword post success, response data:", res.data);
         return res.data;
     } catch (error: any) {
+        console.error("[LOG] [FRONTEND] ResetPassword post failed:", error);
         return handleError(error, "Password reset failed. Please try again.");
     }
 };

@@ -29,17 +29,32 @@ export default function ForgotPasswordPage() {
 
     const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        console.log("[LOG] [FRONTEND] Forgot Password Form Submitted, email:", email);
         setIsLoading(true)
-        const data = await forgotPassword(email);
-        const message = data?.message || data?.massage || "Something went wrong."
-        if (data?.status === 200) {
-            sessionStorage.setItem('resetEmail', email);
-            toast.success(message);
-            navigate('/otp-verify');
-        } else {
-            toast.error(message);
+
+        try {
+            console.log("[LOG] [FRONTEND] Calling forgotPassword service...");
+            const data = await forgotPassword(email);
+            console.log("[LOG] [FRONTEND] forgotPassword service returned response:", data);
+            
+            const message = data?.message || data?.massage || "Something went wrong."
+
+            if (data?.status === 200) {
+                console.log("[LOG] [FRONTEND] Forgot password succeeded. Saving resetEmail and navigating...");
+                sessionStorage.setItem('resetEmail', email);
+                toast.success(message);
+                navigate('/otp-verify');
+            } else {
+                console.log("[LOG] [FRONTEND] Forgot password failed status:", data?.status, "message:", message);
+                toast.error(message);
+            }
+        } catch (error: any) {
+            console.error("[LOG] [FRONTEND] Exception caught in handleEmailSubmit:", error);
+            toast.error(error?.message || "An unexpected error occurred.");
+        } finally {
+            console.log("[LOG] [FRONTEND] Setting isLoading to false");
+            setIsLoading(false)
         }
-        setIsLoading(false)
     }
 
     const steps = [

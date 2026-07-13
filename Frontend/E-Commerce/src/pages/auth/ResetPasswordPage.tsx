@@ -51,19 +51,32 @@ export default function ResetPasswordPage() {
     const handleSubmit = async (event: any) => {
         event.preventDefault();
         if (!canSubmit) return
+        console.log("[LOG] [FRONTEND] Reset Password Form Submitted");
         setIsLoading(true)
 
-        const data = await ResetPassword(newPassword.new_password);
-        const message = data?.message || data?.massage || "Something went wrong."
+        try {
+            console.log("[LOG] [FRONTEND] Calling ResetPassword service...");
+            const data = await ResetPassword(newPassword.new_password);
+            console.log("[LOG] [FRONTEND] ResetPassword service returned response:", data);
+            
+            const message = data?.message || data?.massage || "Something went wrong."
 
-        if (data?.status === 200) {
-            sessionStorage.clear();
-            toast.success(message)
-            navigate('/login')
-        } else {
-            toast.error(message)
+            if (data?.status === 200) {
+                console.log("[LOG] [FRONTEND] Password reset successful. Clearing session and navigating...");
+                sessionStorage.clear();
+                toast.success(message)
+                navigate('/login')
+            } else {
+                console.log("[LOG] [FRONTEND] Password reset failed status:", data?.status, "message:", message);
+                toast.error(message)
+            }
+        } catch (error: any) {
+            console.error("[LOG] [FRONTEND] Exception caught in ResetPassword handleSubmit:", error);
+            toast.error(error?.message || "An unexpected error occurred.");
+        } finally {
+            console.log("[LOG] [FRONTEND] Setting isLoading to false");
+            setIsLoading(false)
         }
-        setIsLoading(false)
     }
 
     const steps = [

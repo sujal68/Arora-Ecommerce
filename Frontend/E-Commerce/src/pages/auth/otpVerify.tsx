@@ -78,29 +78,49 @@ export default function OtpVerifyPage() {
 
     const handleVerify = async () => {
         const finalOtp = otp.join("")
+        console.log("[LOG] [FRONTEND] OTP Verification Submitted, OTP length:", finalOtp.length);
         setIsLoading(true)
 
-        const data = await AdminOtpVerify(finalOtp)
-        const message = data?.message || data?.massage || "Something went wrong."
+        try {
+            console.log("[LOG] [FRONTEND] Calling AdminOtpVerify service...");
+            const data = await AdminOtpVerify(finalOtp)
+            console.log("[LOG] [FRONTEND] AdminOtpVerify service returned response:", data);
+            
+            const message = data?.message || data?.massage || "Something went wrong."
 
-        if (data?.status === 200) {
-            toast.success(message);
-            navigate('/reset-password');
-        } else {
-            toast.error(message);
+            if (data?.status === 200) {
+                console.log("[LOG] [FRONTEND] OTP verified successfully. Navigating to reset-password...");
+                toast.success(message);
+                navigate('/reset-password');
+            } else {
+                console.log("[LOG] [FRONTEND] OTP verification failed status:", data?.status, "message:", message);
+                toast.error(message);
+            }
+        } catch (error: any) {
+            console.error("[LOG] [FRONTEND] Exception caught in handleVerify:", error);
+            toast.error(error?.message || "An unexpected error occurred.");
+        } finally {
+            console.log("[LOG] [FRONTEND] Setting isLoading to false");
+            setIsLoading(false)
         }
-
-        setIsLoading(false)
     }
 
     const handleResend = async () => {
+        console.log("[LOG] [FRONTEND] Resend OTP Clicked");
         setIsLoading(true)
-        await new Promise(r => setTimeout(r, 1200))
-        setIsLoading(false)
-        setOtp(['', '', '', '', '', ''])
-        setTimer(120)
-        setCanResend(false)
-        inputRefs.current[0]?.focus()
+        try {
+            await new Promise(r => setTimeout(r, 1200))
+            setOtp(['', '', '', '', '', ''])
+            setTimer(120)
+            setCanResend(false)
+            inputRefs.current[0]?.focus()
+            console.log("[LOG] [FRONTEND] OTP Resent and input reset completed");
+        } catch (error: any) {
+            console.error("[LOG] [FRONTEND] Exception caught in handleResend:", error);
+        } finally {
+            console.log("[LOG] [FRONTEND] Setting isLoading to false");
+            setIsLoading(false)
+        }
     }
 
     const formatTime = (seconds: number) => {

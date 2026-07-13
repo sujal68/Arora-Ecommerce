@@ -57,20 +57,32 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        console.log("[LOG] [FRONTEND] Login Form Submitted, email:", loginData.email);
         setIsLoading(true)
 
-        const data = await adminLogin(loginData)
-        const message = data?.message || data?.massage || "Unable to login. Please try again."
+        try {
+            console.log("[LOG] [FRONTEND] Calling adminLogin service...");
+            const data = await adminLogin(loginData)
+            console.log("[LOG] [FRONTEND] adminLogin service returned response:", data);
+            
+            const message = data?.message || data?.massage || "Unable to login. Please try again."
 
-        if (data?.status === 200) {
-            localStorage.setItem("adminAuthToken", data.result.token);
-            toast.success(message);
-            navigate('/dashboard');
-        } else {
-            toast.error(message);
+            if (data?.status === 200) {
+                console.log("[LOG] [FRONTEND] Login successful. Saving token and navigating...");
+                localStorage.setItem("adminAuthToken", data.result.token);
+                toast.success(message);
+                navigate('/dashboard');
+            } else {
+                console.log("[LOG] [FRONTEND] Login failed status:", data?.status, "message:", message);
+                toast.error(message);
+            }
+        } catch (error: any) {
+            console.error("[LOG] [FRONTEND] Exception caught in handleSubmit:", error);
+            toast.error(error?.message || "An unexpected error occurred.");
+        } finally {
+            console.log("[LOG] [FRONTEND] Setting isLoading to false");
+            setIsLoading(false)
         }
-
-        setIsLoading(false)
     }
 
 
