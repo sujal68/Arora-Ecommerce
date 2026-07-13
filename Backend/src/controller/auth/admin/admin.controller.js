@@ -41,13 +41,13 @@ module.exports.loginAdmin = async (req, res) => {
         const admin = await adminAuthService.FetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, false);
         console.log("ADMIN FOUND:", admin);
         if (!admin) {
-            await triggerNotification(`Failed admin login attempt (email not found): ${req.body.email}`, 'warn');
+            triggerNotification(`Failed admin login attempt (email not found): ${req.body.email}`, 'warn');
             return res.json(successResponse(statusCode.BAD_REQUEST, true, MSG.Admin_Not_Found));
         }
 
         const isPasswordMatch = await bcrypt.compare(req.body.password, admin.password);
         if (!isPasswordMatch) {
-            await triggerNotification(`Failed admin login attempt (wrong password): ${admin.email}`, 'warn');
+            triggerNotification(`Failed admin login attempt (wrong password): ${admin.email}`, 'warn');
             return res.json(successResponse(statusCode.BAD_REQUEST, true, MSG.Admin_INCORRECT_PAASWORD));
         }
 
@@ -57,7 +57,7 @@ module.exports.loginAdmin = async (req, res) => {
         }
         const Tocken = JWT.sign(payload, process.env.JWT_SECRET_KEY)
 
-        await triggerNotification(`Administrator logged in: ${admin.email}`, 'admin');
+        triggerNotification(`Administrator logged in: ${admin.email}`, 'admin');
 
         return res.json(successResponse(statusCode.OK, false, MSG.Admin_Login_Success, { token: Tocken }));
     } catch (error) {

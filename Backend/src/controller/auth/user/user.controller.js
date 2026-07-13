@@ -29,7 +29,7 @@ module.exports.registerUser = async (req, res) => {
             return res.status(statusCodes.BAD_REQUEST).json(errorResponse(statusCodes.BAD_REQUEST, true, MSG.User_Registration_Failed));
         }
 
-        await triggerNotification(`New customer registered: ${newUser.first_name} ${newUser.last_name} (${newUser.email})`, 'user');
+        triggerNotification(`New customer registered: ${newUser.first_name} ${newUser.last_name} (${newUser.email})`, 'user');
 
         return res.status(statusCodes.CREATED).json(successResponse(statusCodes.CREATED, false, MSG.User_Registration_Success, newUser));
     } catch (error) {
@@ -45,14 +45,14 @@ module.exports.loginUser = async (req, res) => {
         const user = await userAuthService.fetchSingleUser({ email: req.body.email });
 
         if (!user) {
-            await triggerNotification(`Failed login attempt (email not found): ${req.body.email}`, 'warn');
+            triggerNotification(`Failed login attempt (email not found): ${req.body.email}`, 'warn');
             return res.status(statusCodes.BAD_REQUEST).json(errorResponse(statusCodes.BAD_REQUEST, true, MSG.User_Not_Found));
         }
 
         const isPassword = await bycrypt.compare(req.body.password, user.password);
 
         if (!isPassword) {
-            await triggerNotification(`Failed login attempt (wrong password): ${user.email}`, 'warn');
+            triggerNotification(`Failed login attempt (wrong password): ${user.email}`, 'warn');
             return res.status(statusCodes.BAD_REQUEST).json(errorResponse(statusCodes.BAD_REQUEST, true, MSG.User_Login_Failed));
         }
 
@@ -63,7 +63,7 @@ module.exports.loginUser = async (req, res) => {
 
         const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
 
-        await triggerNotification(`Customer logged in: ${user.email}`, 'info');
+        triggerNotification(`Customer logged in: ${user.email}`, 'info');
 
         return res.status(statusCodes.OK).json(successResponse(statusCodes.OK, false, MSG.User_Login_Success, { token }));
     } catch (err) {
