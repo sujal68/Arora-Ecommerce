@@ -84,11 +84,15 @@ module.exports.ForgotPassword = async (req, res) => {
                 .json(errorResponse(statusCode.BAD_REQUEST, true, MSG.Many_Time_Otp));
         }
 
-        const OTP = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log("STEP 1");
 
+        const OTP = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log("STEP 2");
         await sendEmail(admin.email, OTP);
+        console.log("STEP 3");
 
         admin.attempt++;
+        console.log("STEP 4");
 
         const expireOtpTime = new Date(Date.now() + 2 * 60 * 1000);
         const attemptExpireTime = new Date(Date.now() + 60 * 60 * 1000);
@@ -99,6 +103,8 @@ module.exports.ForgotPassword = async (req, res) => {
             Otp_expire_time: expireOtpTime,
             attempt_expire: attemptExpireTime
         });
+
+        console.log("STEP 5");
 
         return res.status(statusCode.OK)
             .json(successResponse(statusCode.OK, false, MSG.Otp_send_successFully));
