@@ -411,7 +411,13 @@ export default function Orders() {
                     {stats.map(s => (
                         <div key={s.label} className="stat-card" onClick={() => { if (s.label !== 'Total Orders' && s.label !== 'Revenue') setFilterStatus(s.label as OrderStatus); else setFilterStatus('All'); }}
                             style={{ background: s.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px' }}>
-                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.val}</div>
+                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                                {isLoading ? (
+                                    <div className="shimmer" style={{ width: 45, height: 22, margin: '2px 0' }} />
+                                ) : (
+                                    s.val
+                                )}
+                            </div>
                             <div style={{ fontSize: 11, color: C.textMuted, marginTop: 3 }}>{s.label}</div>
                             <div style={{ fontSize: 10, color: C.textMuted, marginTop: 1, opacity: 0.7 }}>{s.sub}</div>
                         </div>
@@ -477,9 +483,38 @@ export default function Orders() {
                                 ))}
                             </div>
                             {isLoading ? (
-                                <div style={{ padding: '52px 20px', textAlign: 'center' }}>
-                                    <div style={{ fontSize: 12, color: C.textMuted }}>Loading orders...</div>
-                                </div>
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <div key={i} style={{
+                                        display: 'grid', gridTemplateColumns: '160px 1.8fr 1fr 90px 90px 120px 36px',
+                                        padding: '13px 20px', borderBottom: i < 4 ? `1px solid #F6F4F0` : 'none',
+                                        alignItems: 'center', background: C.white
+                                    }}>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 100, height: 13, marginBottom: 5 }} />
+                                            <div className="shimmer" style={{ width: 60, height: 10 }} />
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                                            <div className="shimmer" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+                                            <div style={{ flex: 1 }}>
+                                                <div className="shimmer" style={{ width: '60%', height: 12, marginBottom: 4 }} />
+                                                <div className="shimmer" style={{ width: '40%', height: 10 }} />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="shimmer" style={{ width: '80%', height: 12 }} />
+                                        </div>
+                                        <div className="shimmer" style={{ width: 45, height: 13 }} />
+                                        <div>
+                                            <div className="shimmer" style={{ width: 55, height: 18, borderRadius: 20 }} />
+                                        </div>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 70, height: 18, borderRadius: 20 }} />
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                            <div className="shimmer" style={{ width: 14, height: 14, borderRadius: '50%' }} />
+                                        </div>
+                                    </div>
+                                ))
                             ) : filtered.length === 0 ? (
                                 <div style={{ padding: '52px 20px', textAlign: 'center' }}>
                                     <div style={{ width: 52, height: 52, borderRadius: 16, background: C.sand, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>

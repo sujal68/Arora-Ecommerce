@@ -330,7 +330,13 @@ export default function ViewProducts() {
                         <div key={s.label} style={{ background: s.bg, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '12px 14px', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
                             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'; }}
                             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}>
-                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.val}</div>
+                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                                {isLoading ? (
+                                    <div className="shimmer" style={{ width: 45, height: 22, margin: '2px 0' }} />
+                                ) : (
+                                    s.val
+                                )}
+                            </div>
                             <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 3 }}>{s.label}</div>
                         </div>
                     ))}
@@ -402,9 +408,39 @@ export default function ViewProducts() {
                                 <div style={{ fontSize: 9.5, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Actions</div>
                             </div>
                             {isLoading ? (
-                                <div style={{ padding: '52px 20px', textAlign: 'center' }}>
-                                    <div style={{ fontSize: 12, color: COLORS.textMuted }}>Loading products...</div>
-                                </div>
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <div key={i} style={{
+                                        display: 'grid', gridTemplateColumns: '36px 52px 2.5fr 1fr 100px 90px 90px 80px 80px',
+                                        padding: '12px 20px', borderBottom: i < 4 ? `1px solid #F6F4F0` : 'none',
+                                        alignItems: 'center', background: COLORS.white
+                                    }}>
+                                        <div><input type="checkbox" disabled style={{ opacity: 0.5 }} /></div>
+                                        <div className="shimmer" style={{ width: 40, height: 40, borderRadius: 10 }} />
+                                        <div style={{ paddingRight: 12 }}>
+                                            <div className="shimmer" style={{ width: '60%', height: 14, marginBottom: 5 }} />
+                                            <div className="shimmer" style={{ width: '40%', height: 11 }} />
+                                        </div>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 60, height: 16, borderRadius: 20 }} />
+                                        </div>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 45, height: 14 }} />
+                                        </div>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 50, height: 18, borderRadius: 20 }} />
+                                        </div>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 50, height: 18, borderRadius: 20 }} />
+                                        </div>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 35, height: 14 }} />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 5 }}>
+                                            <div className="shimmer" style={{ width: 26, height: 26, borderRadius: 7 }} />
+                                            <div className="shimmer" style={{ width: 26, height: 26, borderRadius: 7 }} />
+                                        </div>
+                                    </div>
+                                ))
                             ) : filtered.length === 0 ? (
                                 <div style={{ padding: '52px 20px', textAlign: 'center' }}>
                                     <div style={{ width: 52, height: 52, borderRadius: 16, background: COLORS.sand, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>

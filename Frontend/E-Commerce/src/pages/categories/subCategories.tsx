@@ -352,7 +352,13 @@ export default function SubCategories() {
                         { label: 'Inactive', val: items.filter(s => !s.active).length, color: COLORS.textMuted, bg: '#F0ECE8' },
                     ].map(s => (
                         <div key={s.label} style={{ background: s.bg, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '12px 14px' }}>
-                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.val}</div>
+                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                                {isLoading ? (
+                                    <div className="shimmer" style={{ width: 45, height: 22, margin: '2px 0' }} />
+                                ) : (
+                                    s.val
+                                )}
+                            </div>
                             <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 3 }}>{s.label}</div>
                         </div>
                     ))}
@@ -404,9 +410,27 @@ export default function SubCategories() {
                                 ))}
                             </div>
                             {isLoading ? (
-                                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                                    <div style={{ fontSize: 12, color: COLORS.textMuted }}>Loading sub-categories...</div>
-                                </div>
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.8fr 1.4fr 0.8fr 1fr 100px 80px', padding: '12px 20px', borderBottom: i < 4 ? `1px solid #F6F4F0` : 'none', alignItems: 'center', background: COLORS.white }}>
+                                        <div>
+                                            <div className="shimmer" style={{ width: '60%', height: 13, marginBottom: 5 }} />
+                                            <div className="shimmer" style={{ width: '40%', height: 11 }} />
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                            <div className="shimmer" style={{ width: 24, height: 24, borderRadius: 6 }} />
+                                            <div className="shimmer" style={{ width: 60, height: 16, borderRadius: 6 }} />
+                                        </div>
+                                        <div className="shimmer" style={{ width: 45, height: 13 }} />
+                                        <div className="shimmer" style={{ width: 35, height: 13 }} />
+                                        <div>
+                                            <div className="shimmer" style={{ width: 50, height: 18, borderRadius: 20 }} />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                            <div className="shimmer" style={{ width: 26, height: 26, borderRadius: 7 }} />
+                                            <div className="shimmer" style={{ width: 26, height: 26, borderRadius: 7 }} />
+                                        </div>
+                                    </div>
+                                ))
                             ) : filtered.length === 0 ? (
                                 <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                                     <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.dark, marginBottom: 4 }}>No sub-categories found</div>

@@ -399,7 +399,13 @@ export default function ViewAdmins() {
                         { label: 'Pending', val: pendingCount, color: COLORS.amber, bg: COLORS.amberBg },
                     ].map(s => (
                         <div key={s.label} style={{ background: s.bg, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '12px 14px' }}>
-                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.val}</div>
+                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                                {isLoading ? (
+                                    <div className="shimmer" style={{ width: 45, height: 22, margin: '2px 0' }} />
+                                ) : (
+                                    s.val
+                                )}
+                            </div>
                             <div style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 3 }}>{s.label}</div>
                         </div>
                     ))}
@@ -450,12 +456,7 @@ export default function ViewAdmins() {
                     </div>
                 ) : null}
 
-                {isLoading ? (
-                    <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: '60px 20px', textAlign: 'center', animation: 'fadeUp 0.4s ease both 0.14s' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={COLORS.green} strokeWidth="2" style={{ animation: 'spin 0.7s linear infinite', margin: '0 auto 12px', display: 'block' }}><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-                        <div style={{ fontSize: 13, color: COLORS.textMuted }}>Loading admins...</div>
-                    </div>
-                ) : viewMode === 'table' ? (
+                {viewMode === 'table' ? (
                     <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 14, overflow: 'hidden', animation: 'fadeUp 0.4s ease both 0.14s' }}>
                         <div className="scroll-area" style={{ overflowX: 'auto' }}>
                             <div style={{ minWidth: 800 }}>
@@ -476,7 +477,30 @@ export default function ViewAdmins() {
                                     ))}
                                 </div>
                                 {/* Rows */}
-                                {filtered.length === 0 ? (
+                                {isLoading ? (
+                                    Array.from({ length: 5 }).map((_, i) => (
+                                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '2.5fr 1.5fr 1fr 1fr 1fr 0.5fr', padding: '13px 20px', borderBottom: i < 4 ? `1px solid #F6F4F0` : 'none', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <div className="shimmer" style={{ width: 34, height: 34, borderRadius: 10 }} />
+                                                <div style={{ flex: 1 }}>
+                                                    <div className="shimmer" style={{ width: '60%', height: 13, marginBottom: 5 }} />
+                                                    <div className="shimmer" style={{ width: '40%', height: 11 }} />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="shimmer" style={{ width: 70, height: 18, borderRadius: 6 }} />
+                                            </div>
+                                            <div>
+                                                <div className="shimmer" style={{ width: 55, height: 18, borderRadius: 20 }} />
+                                            </div>
+                                            <div className="shimmer" style={{ width: 60, height: 13 }} />
+                                            <div className="shimmer" style={{ width: 50, height: 13 }} />
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                <div className="shimmer" style={{ width: 26, height: 26, borderRadius: 7 }} />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : filtered.length === 0 ? (
                                 <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                                     <div style={{ width: 48, height: 48, borderRadius: 14, background: COLORS.sand, border: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={COLORS.textMuted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg></div>
                                     <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.dark, marginBottom: 4 }}>No admins found</div>
@@ -563,7 +587,23 @@ export default function ViewAdmins() {
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14, animation: 'fadeUp 0.4s ease both 0.14s' }}>
-                        {filtered.map((a, i) => {
+                        {isLoading ? (
+                            Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: 18 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                                        <div className="shimmer" style={{ width: 44, height: 44, borderRadius: 12 }} />
+                                        <div className="shimmer" style={{ width: 50, height: 18, borderRadius: 20 }} />
+                                    </div>
+                                    <div className="shimmer" style={{ width: '70%', height: 14, marginBottom: 6 }} />
+                                    <div className="shimmer" style={{ width: '50%', height: 11, marginBottom: 12 }} />
+                                    <div className="shimmer" style={{ width: '100%', height: 32, borderRadius: 8, marginBottom: 12 }} />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, borderTop: `1px solid ${COLORS.border}` }}>
+                                        <div className="shimmer" style={{ width: 60, height: 11 }} />
+                                        <div className="shimmer" style={{ width: 50, height: 11 }} />
+                                    </div>
+                                </div>
+                            ))
+                        ) : filtered.map((a, i) => {
                             const rc = ROLE_CONFIG[a.role];
                             const sc = STATUS_CONFIG[a.status];
                             const ac = AVATAR_COLORS[parseInt(a.id.replace('A', '')) % AVATAR_COLORS.length];

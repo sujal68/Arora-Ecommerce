@@ -601,10 +601,25 @@ export default function ArovaDashboard() {
                                     <div style={{ fontSize: 10.5, color: COLORS.textMuted, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: 1.3 }}>{s.label}</div>
                                     <div style={{ width: 32, height: 32, borderRadius: 8, background: s.accentBg, border: `1px solid ${s.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{s.icon}</div>
                                 </div>
-                                <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 600, color: COLORS.dark, letterSpacing: '-0.025em', marginBottom: 7, lineHeight: 1 }}><AnimatedNumber value={s.value} format={s.format} /></div>
+                                <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 600, color: COLORS.dark, letterSpacing: '-0.025em', marginBottom: 7, lineHeight: 1 }}>
+                                    {statsLoaded ? (
+                                        <AnimatedNumber value={s.value} format={s.format} />
+                                    ) : (
+                                        <div className="shimmer" style={{ width: 80, height: 26, margin: '2px 0' }} />
+                                    )}
+                                </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <span style={{ fontSize: 10.5, fontWeight: 600, padding: '2px 7px', borderRadius: 20, ...(s.up ? { color: COLORS.green, background: COLORS.greenBg } : { color: COLORS.red, background: COLORS.redBg }) }}>{s.up ? '↑' : '↓'} {s.change}</span>
-                                    <span style={{ fontSize: 10, color: '#C4C0B8' }}>{s.sub}</span>
+                                    {statsLoaded ? (
+                                        <>
+                                            <span style={{ fontSize: 10.5, fontWeight: 600, padding: '2px 7px', borderRadius: 20, ...(s.up ? { color: COLORS.green, background: COLORS.greenBg } : { color: COLORS.red, background: COLORS.redBg }) }}>{s.up ? '↑' : '↓'} {s.change}</span>
+                                            <span style={{ fontSize: 10, color: '#C4C0B8' }}>{s.sub}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="shimmer" style={{ width: 45, height: 16, borderRadius: 20 }} />
+                                            <div className="shimmer" style={{ width: 60, height: 12 }} />
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -623,16 +638,34 @@ export default function ArovaDashboard() {
                                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={COLORS.greenLight} strokeWidth="1.8"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></svg>
                                     </div>
                                 </div>
-                                <div style={{ fontSize: 28, fontWeight: 600, color: '#fff', letterSpacing: '-0.03em', marginBottom: 6 }}><AnimatedNumber value={live.earnings} format={v => `₹${Math.round(v).toLocaleString()}`} /></div>
-                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 12 }}>Lifetime platform earnings</div>
-                                <div style={{ height: 3, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
-                                    <div style={{ height: '100%', width: `${live.ytdProgress}%`, background: 'linear-gradient(90deg,#2A6344,#48A87A)', borderRadius: 3 }} />
+                                <div style={{ fontSize: 28, fontWeight: 600, color: '#fff', letterSpacing: '-0.03em', marginBottom: 6 }}>
+                                    {statsLoaded ? (
+                                        <AnimatedNumber value={live.earnings} format={v => `₹${Math.round(v).toLocaleString()}`} />
+                                    ) : (
+                                        <div className="shimmer-dark" style={{ width: 120, height: 28, margin: '2px 0' }} />
+                                    )}
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: 'rgba(255,255,255,0.3)' }}><span>YTD progress</span><span>{live.ytdProgress}%</span></div>
+                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 12 }}>Lifetime platform earnings</div>
+                                {statsLoaded ? (
+                                    <>
+                                        <div style={{ height: 3, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                                            <div style={{ height: '100%', width: `${live.ytdProgress}%`, background: 'linear-gradient(90deg,#2A6344,#48A87A)', borderRadius: 3 }} />
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: 'rgba(255,255,255,0.3)' }}><span>YTD progress</span><span>{live.ytdProgress}%</span></div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="shimmer-dark" style={{ height: 3, borderRadius: 3 }} />
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                                            <div className="shimmer-dark" style={{ width: 50, height: 10 }} />
+                                            <div className="shimmer-dark" style={{ width: 25, height: 10 }} />
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
-                        {/* Pending Orders — IMPROVED */}
+                        {/* Pending Orders */}
                         <div className="card" style={{ padding: '20px', animation: 'fadeUp 0.5s ease both 0.28s' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                                 <div style={{ fontSize: 10.5, color: COLORS.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Pending Orders</div>
@@ -640,55 +673,89 @@ export default function ArovaDashboard() {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 16 }}>
                                 <div style={{ fontSize: 32, fontWeight: 600, color: COLORS.dark, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                                    <AnimatedNumber value={live.pending} format={v => Math.round(v).toString()} />
+                                    {statsLoaded ? (
+                                        <AnimatedNumber value={live.pending} format={v => Math.round(v).toString()} />
+                                    ) : (
+                                        <div className="shimmer" style={{ width: 50, height: 32 }} />
+                                    )}
                                 </div>
                                 <div style={{ fontSize: 11, color: COLORS.textMuted, paddingBottom: 4 }}>orders awaiting action</div>
                             </div>
-                            {/* Segmented progress bar */}
-                            <div style={{ display: 'flex', gap: 2, height: 5, borderRadius: 3, overflow: 'hidden', marginBottom: 12 }}>
-                                <div style={{ width: `${processingPct}%`, background: '#F59E0B', transition: 'width 0.6s ease' }} />
-                                <div style={{ width: `${awaitingPct}%`, background: COLORS.red, transition: 'width 0.6s ease' }} />
-                                <div style={{ width: `${onHoldPct}%`, background: '#C4C0B8', transition: 'width 0.6s ease' }} />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                                {[
-                                    { label: 'Processing', count: processingCount, pct: processingPct, color: '#F59E0B' },
-                                    { label: 'Awaiting payment', count: awaitingCount, pct: awaitingPct, color: COLORS.red },
-                                    { label: 'On hold', count: onHoldCount, pct: onHoldPct, color: '#B0ACA4' },
-                                ].map(row => (
-                                    <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: row.color, flexShrink: 0 }} />
-                                        <span style={{ fontSize: 11.5, color: COLORS.textSub, flex: 1 }}>{row.label}</span>
-                                        <span style={{ fontSize: 10.5, color: COLORS.textMuted }}>{row.pct}%</span>
-                                        <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.dark, minWidth: 18, textAlign: 'right' }}>{row.count}</span>
+                            {statsLoaded ? (
+                                <>
+                                    {/* Segmented progress bar */}
+                                    <div style={{ display: 'flex', gap: 2, height: 5, borderRadius: 3, overflow: 'hidden', marginBottom: 12 }}>
+                                        <div style={{ width: `${processingPct}%`, background: '#F59E0B', transition: 'width 0.6s ease' }} />
+                                        <div style={{ width: `${awaitingPct}%`, background: COLORS.red, transition: 'width 0.6s ease' }} />
+                                        <div style={{ width: `${onHoldPct}%`, background: '#C4C0B8', transition: 'width 0.6s ease' }} />
                                     </div>
-                                ))}
-                            </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                                        {[
+                                            { label: 'Processing', count: processingCount, pct: processingPct, color: '#F59E0B' },
+                                            { label: 'Awaiting payment', count: awaitingCount, pct: awaitingPct, color: COLORS.red },
+                                            { label: 'On hold', count: onHoldCount, pct: onHoldPct, color: '#B0ACA4' },
+                                        ].map(row => (
+                                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: row.color, flexShrink: 0 }} />
+                                                <span style={{ fontSize: 11.5, color: COLORS.textSub, flex: 1 }}>{row.label}</span>
+                                                <span style={{ fontSize: 10.5, color: COLORS.textMuted }}>{row.pct}%</span>
+                                                <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.dark, minWidth: 18, textAlign: 'right' }}>{row.count}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="shimmer" style={{ height: 5, borderRadius: 3, marginBottom: 12 }} />
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                                        {Array.from({ length: 3 }).map((_, i) => (
+                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <div className="shimmer" style={{ width: 6, height: 6, borderRadius: '50%' }} />
+                                                <div className="shimmer" style={{ height: 12, flex: 1 }} />
+                                                <div className="shimmer" style={{ width: 25, height: 12 }} />
+                                                <div className="shimmer" style={{ width: 18, height: 12 }} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
                         </div>
 
-                        {/* Revenue — IMPROVED interactive sparkline */}
+                        {/* Revenue */}
                         <div className="card" style={{ padding: '20px', animation: 'fadeUp 0.5s ease both 0.34s' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
                                 <div>
                                     <div style={{ fontSize: 10.5, color: COLORS.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4 }}>Revenue</div>
                                     <div style={{ fontSize: 28, fontWeight: 600, color: COLORS.dark, letterSpacing: '-0.03em' }}>
-                                        <AnimatedNumber value={live.revenue} format={v => v >= 1000 ? `₹${(v / 1000).toFixed(1)}K` : `₹${Math.round(v).toLocaleString()}`} />
+                                        {statsLoaded ? (
+                                            <AnimatedNumber value={live.revenue} format={v => v >= 1000 ? `₹${(v / 1000).toFixed(1)}K` : `₹${Math.round(v).toLocaleString()}`} />
+                                        ) : (
+                                            <div className="shimmer" style={{ width: 100, height: 28 }} />
+                                        )}
                                     </div>
                                 </div>
-                                <span style={{
-                                    fontSize: 10.5,
-                                    fontWeight: 600,
-                                    color: live.revenueGrowth >= 0 ? COLORS.green : COLORS.red,
-                                    background: live.revenueGrowth >= 0 ? COLORS.greenBg : COLORS.redBg,
-                                    padding: '3px 8px',
-                                    borderRadius: 20,
-                                    marginTop: 2
-                                }}>
-                                    {live.revenueGrowth >= 0 ? '↑' : '↓'} {live.revenueGrowth >= 0 ? '+' : ''}{live.revenueGrowth}%
-                                </span>
+                                {statsLoaded ? (
+                                    <span style={{
+                                        fontSize: 10.5,
+                                        fontWeight: 600,
+                                        color: live.revenueGrowth >= 0 ? COLORS.green : COLORS.red,
+                                        background: live.revenueGrowth >= 0 ? COLORS.greenBg : COLORS.redBg,
+                                        padding: '3px 8px',
+                                        borderRadius: 20,
+                                        marginTop: 2
+                                    }}>
+                                        {live.revenueGrowth >= 0 ? '↑' : '↓'} {live.revenueGrowth >= 0 ? '+' : ''}{live.revenueGrowth}%
+                                    </span>
+                                ) : (
+                                    <div className="shimmer" style={{ width: 45, height: 16, borderRadius: 20, marginTop: 2 }} />
+                                )}
                             </div>
                             <div style={{ fontSize: 10.5, color: COLORS.textMuted, marginBottom: 10 }}>vs last month · hover to explore</div>
-                            <RevenueSparkline sparklinePoints={live.sparklinePoints} liveRevenue={live.revenue} />
+                            {statsLoaded ? (
+                                <RevenueSparkline sparklinePoints={live.sparklinePoints} liveRevenue={live.revenue} />
+                            ) : (
+                                <div className="shimmer" style={{ width: '100%', height: 56, borderRadius: 6, marginBottom: 10 }} />
+                            )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#C4C0B8', marginTop: 4 }}>
                                 <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Now</span>
                             </div>
@@ -697,7 +764,7 @@ export default function ArovaDashboard() {
 
                     {/* Chart + Top Products */}
                     <div className="chart-products-grid">
-                        {/* Sales Overview — IMPROVED with ghost bars + better tooltip */}
+                        {/* Sales Overview */}
                         <div className="card" style={{ padding: '20px', animation: 'fadeUp 0.5s ease both 0.38s' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
                                 <div>
@@ -713,34 +780,43 @@ export default function ArovaDashboard() {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'flex-end', gap: chartView === 'weekly' ? (isMobile ? 4 : 10) : (isMobile ? 2 : 6), height: 120, padding: '0 4px' }}>
-                                {effectiveChartData.map((h, i) => {
-                                    const isHovered = hoveredBar === i;
-                                    const prevH = h * 0.85;
-                                    const curH_px = (h / maxVal) * 100;
-                                    const prevH_px = (prevH / maxVal) * 100;
-                                    const tooltipVal = h >= 1000
-                                        ? `₹${(h / 1000).toFixed(1)}K`
-                                        : `₹${Math.round(h).toLocaleString()}`;
-                                    return (
-                                        <div key={i} className="bar-item" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}
-                                            onMouseEnter={() => setHoveredBar(i)}
-                                            onMouseLeave={() => setHoveredBar(null)}>
-                                            <div style={{ width: '100%', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', height: 100, gap: 2 }}>
-                                                {/* Tooltip */}
-                                                {isHovered && (
-                                                    <div style={{ position: 'absolute', top: -26, left: '50%', transform: 'translateX(-50%)', background: COLORS.dark, color: '#fff', fontSize: 9.5, padding: '3px 7px', borderRadius: 5, whiteSpace: 'nowrap', zIndex: 2, pointerEvents: 'none' }}>
-                                                        {tooltipVal}
-                                                    </div>
-                                                )}
-                                                {/* Previous period ghost bar */}
-                                                <div style={{ width: '40%', height: `${prevH_px}px`, background: isHovered ? '#D0CCC4' : '#E8E4DC', borderRadius: '3px 3px 0 0', transition: 'height 0.5s cubic-bezier(0.4,0,0.2,1), background 0.18s' }} />
-                                                {/* Current period bar */}
-                                                <div className="bar-fill-cur" style={{ width: '40%', height: `${curH_px}px`, background: isHovered ? COLORS.green : (i === 4 && chartView === 'weekly' ? COLORS.green : '#B8D4C3'), borderRadius: '3px 3px 0 0', opacity: isHovered ? 1 : 0.9, transition: 'height 0.5s cubic-bezier(0.4,0,0.2,1), background 0.18s, opacity 0.18s' }} />
+                                {statsLoaded ? (
+                                    effectiveChartData.map((h, i) => {
+                                        const isHovered = hoveredBar === i;
+                                        const prevH = h * 0.85;
+                                        const curH_px = (h / maxVal) * 100;
+                                        const prevH_px = (prevH / maxVal) * 100;
+                                        const tooltipVal = h >= 1000
+                                            ? `₹${(h / 1000).toFixed(1)}K`
+                                            : `₹${Math.round(h).toLocaleString()}`;
+                                        return (
+                                            <div key={i} className="bar-item" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}
+                                                onMouseEnter={() => setHoveredBar(i)}
+                                                onMouseLeave={() => setHoveredBar(null)}>
+                                                <div style={{ width: '100%', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', height: 100, gap: 2 }}>
+                                                    {/* Tooltip */}
+                                                    {isHovered && (
+                                                        <div style={{ position: 'absolute', top: -26, left: '50%', transform: 'translateX(-50%)', background: COLORS.dark, color: '#fff', fontSize: 9.5, padding: '3px 7px', borderRadius: 5, whiteSpace: 'nowrap', zIndex: 2, pointerEvents: 'none' }}>
+                                                            {tooltipVal}
+                                                        </div>
+                                                    )}
+                                                    {/* Previous period ghost bar */}
+                                                    <div style={{ width: '40%', height: `${prevH_px}px`, background: isHovered ? '#D0CCC4' : '#E8E4DC', borderRadius: '3px 3px 0 0', transition: 'height 0.5s cubic-bezier(0.4,0,0.2,1), background 0.18s' }} />
+                                                    {/* Current period bar */}
+                                                    <div className="bar-fill-cur" style={{ width: '40%', height: `${curH_px}px`, background: isHovered ? COLORS.green : (i === 4 && chartView === 'weekly' ? COLORS.green : '#B8D4C3'), borderRadius: '3px 3px 0 0', opacity: isHovered ? 1 : 0.9, transition: 'height 0.5s cubic-bezier(0.4,0,0.2,1), background 0.18s, opacity 0.18s' }} />
+                                                </div>
+                                                <div className="bar-label" style={{ fontSize: 9, color: isHovered ? COLORS.dark : COLORS.textMuted, fontWeight: 500, transition: 'color 0.15s' }}>{effectiveLabels[i]}</div>
                                             </div>
-                                            <div className="bar-label" style={{ fontSize: 9, color: isHovered ? COLORS.dark : COLORS.textMuted, fontWeight: 500, transition: 'color 0.15s' }}>{effectiveLabels[i]}</div>
+                                        );
+                                    })
+                                ) : (
+                                    Array.from({ length: chartView === 'weekly' ? 7 : 12 }).map((_, i) => (
+                                        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5, height: '100%', justifyContent: 'flex-end' }}>
+                                            <div className="shimmer" style={{ width: '80%', height: `${30 + (i % 3) * 20}%`, borderRadius: '3px 3px 0 0', margin: '0 auto' }} />
+                                            <div className="shimmer" style={{ width: '60%', height: 8, margin: '0 auto' }} />
                                         </div>
-                                    );
-                                })}
+                                    ))
+                                )}
                             </div>
                             <div style={{ display: 'flex', gap: 16, marginTop: 14, paddingTop: 14, borderTop: `1px solid #F0ECE6` }}>
                                 {[
@@ -750,13 +826,17 @@ export default function ArovaDashboard() {
                                     <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                         <div style={{ width: 8, height: 8, borderRadius: 2, background: s.col }} />
                                         <span style={{ fontSize: 11, color: COLORS.textMuted }}>{s.label}</span>
-                                        <span style={{ fontSize: 11.5, fontWeight: 600, color: COLORS.dark }}>{s.val}</span>
+                                        {statsLoaded ? (
+                                            <span style={{ fontSize: 11.5, fontWeight: 600, color: COLORS.dark }}>{s.val}</span>
+                                        ) : (
+                                            <div className="shimmer" style={{ width: 40, height: 12 }} />
+                                        )}
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Top Products — IMPROVED with hover + revenue */}
+                        {/* Top Products */}
                         <div className="card" style={{ padding: '20px', animation: 'fadeUp 0.5s ease both 0.44s' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                                 <div>
@@ -766,31 +846,46 @@ export default function ArovaDashboard() {
                                 <button onClick={() => navigate('/dashboard/products')} style={{ fontSize: 11, color: COLORS.green, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500 }}>View all →</button>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                {live.topProducts.length === 0 ? (
-                                    <div style={{ padding: '40px 20px', textAlign: 'center', fontSize: 12, color: COLORS.textMuted }}>
-                                        No top products found for this range.
-                                    </div>
-                                ) : live.topProducts.map((p, i) => (
-                                    <div key={p.name} className="product-row"
-                                        onMouseEnter={() => setHoveredProduct(i)}
-                                        onMouseLeave={() => setHoveredProduct(null)}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                                <div style={{ width: 18, height: 18, borderRadius: 5, background: i === 0 ? COLORS.greenBg : '#F6F4F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: i === 0 ? COLORS.green : COLORS.textMuted, flexShrink: 0 }}>#{i + 1}</div>
-                                                <span style={{ fontSize: 12, fontWeight: i === 0 ? 600 : 400, color: COLORS.dark }}>{p.name}</span>
+                                {statsLoaded ? (
+                                    live.topProducts.length === 0 ? (
+                                        <div style={{ padding: '40px 20px', textAlign: 'center', fontSize: 12, color: COLORS.textMuted }}>
+                                            No top products found for this range.
+                                        </div>
+                                    ) : live.topProducts.map((p, i) => (
+                                        <div key={p.name} className="product-row"
+                                            onMouseEnter={() => setHoveredProduct(i)}
+                                            onMouseLeave={() => setHoveredProduct(null)}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                    <div style={{ width: 18, height: 18, borderRadius: 5, background: i === 0 ? COLORS.greenBg : '#F6F4F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: i === 0 ? COLORS.green : COLORS.textMuted, flexShrink: 0 }}>#{i + 1}</div>
+                                                    <span style={{ fontSize: 12, fontWeight: i === 0 ? 600 : 400, color: COLORS.dark }}>{p.name}</span>
+                                                </div>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <div style={{ fontSize: 10.5, color: COLORS.textMuted }}>{p.units} units</div>
+                                                    {hoveredProduct === i && (
+                                                        <div style={{ fontSize: 10, color: COLORS.green, fontWeight: 600, animation: 'fadeIn 0.15s ease' }}>{p.revenue}</div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div style={{ textAlign: 'right' }}>
-                                                <div style={{ fontSize: 10.5, color: COLORS.textMuted }}>{p.units} units</div>
-                                                {hoveredProduct === i && (
-                                                    <div style={{ fontSize: 10, color: COLORS.green, fontWeight: 600, animation: 'fadeIn 0.15s ease' }}>{p.revenue}</div>
-                                                )}
+                                            <div style={{ height: 4, background: '#F0EDE8', borderRadius: 3 }}>
+                                                <div className="product-bar-fill" style={{ height: '100%', width: `${p.percentage}%`, background: hoveredProduct === i ? COLORS.green : (i === 0 ? COLORS.green : i === 1 ? '#6BAF8A' : '#C4D9CC'), borderRadius: 3 }} />
                                             </div>
                                         </div>
-                                        <div style={{ height: 4, background: '#F0EDE8', borderRadius: 3 }}>
-                                            <div className="product-bar-fill" style={{ height: '100%', width: `${p.percentage}%`, background: hoveredProduct === i ? COLORS.green : (i === 0 ? COLORS.green : i === 1 ? '#6BAF8A' : '#C4D9CC'), borderRadius: 3 }} />
+                                    ))
+                                ) : (
+                                    Array.from({ length: 5 }).map((_, i) => (
+                                        <div key={i} style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1 }}>
+                                                    <div className="shimmer" style={{ width: 18, height: 18, borderRadius: 5 }} />
+                                                    <div className="shimmer" style={{ height: 13, width: '60%' }} />
+                                                </div>
+                                                <div className="shimmer" style={{ width: 45, height: 13 }} />
+                                            </div>
+                                            <div className="shimmer" style={{ height: 4, width: '100%' }} />
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
@@ -812,31 +907,48 @@ export default function ArovaDashboard() {
                                             <div key={h} style={{ fontSize: 9.5, fontWeight: 600, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{h}</div>
                                         ))}
                                     </div>
-                                    {live.recentOrders.length === 0 ? (
-                                        <div style={{ padding: '40px 20px', textAlign: 'center', fontSize: 12, color: COLORS.textMuted }}>
-                                            No recent orders found.
-                                        </div>
-                                    ) : live.recentOrders.map((o, i) => {
-                                        const sc = STATUS_CONFIG[o.status] || { bg: '#FAFAF8', color: COLORS.textSub, dot: '#B8B4AD' };
-                                        const ac = AVATAR_COLORS[i % AVATAR_COLORS.length];
-                                        return (
-                                            <div key={o.id} className="table-row" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.4fr 1fr 0.7fr 0.85fr', padding: '11px 20px', borderBottom: i < live.recentOrders.length - 1 ? `1px solid #F6F4F0` : 'none', alignItems: 'center', background: hoveredRow === i ? '#FBFAF7' : '#fff' }}
-                                                onMouseEnter={() => setHoveredRow(i)} onMouseLeave={() => setHoveredRow(null)}>
-                                                <div style={{ fontSize: 11.5, fontWeight: 500, color: COLORS.dark, fontFamily: 'monospace' }}>{o.id}</div>
-                                                <div style={{ fontSize: 12, color: '#2A2520' }}>{o.product}</div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                                    <div style={{ width: 22, height: 22, borderRadius: 6, background: ac.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8.5, fontWeight: 600, color: ac.color, flexShrink: 0 }}>{o.avatar}</div>
-                                                    <span style={{ fontSize: 11.5, color: COLORS.textSub }}>{o.customer}</span>
+                                    {statsLoaded ? (
+                                        live.recentOrders.length === 0 ? (
+                                            <div style={{ padding: '40px 20px', textAlign: 'center', fontSize: 12, color: COLORS.textMuted }}>
+                                                No recent orders found.
+                                            </div>
+                                        ) : live.recentOrders.map((o, i) => {
+                                            const sc = STATUS_CONFIG[o.status] || { bg: '#FAFAF8', color: COLORS.textSub, dot: '#B8B4AD' };
+                                            const ac = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                                            return (
+                                                <div key={o.id} className="table-row" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.4fr 1fr 0.7fr 0.85fr', padding: '11px 20px', borderBottom: i < live.recentOrders.length - 1 ? `1px solid #F6F4F0` : 'none', alignItems: 'center', background: hoveredRow === i ? '#FBFAF7' : '#fff' }}
+                                                    onMouseEnter={() => setHoveredRow(i)} onMouseLeave={() => setHoveredRow(null)}>
+                                                    <div style={{ fontSize: 11.5, fontWeight: 500, color: COLORS.dark, fontFamily: 'monospace' }}>{o.id}</div>
+                                                    <div style={{ fontSize: 12, color: '#2A2520' }}>{o.product}</div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                        <div style={{ width: 22, height: 22, borderRadius: 6, background: ac.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8.5, fontWeight: 600, color: ac.color, flexShrink: 0 }}>{o.avatar}</div>
+                                                        <span style={{ fontSize: 11.5, color: COLORS.textSub }}>{o.customer}</span>
+                                                    </div>
+                                                    <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.dark }}>{o.amount}</div>
+                                                    <div>
+                                                        <span style={{ fontSize: 10, fontWeight: 500, padding: '3px 8px', borderRadius: 20, letterSpacing: '0.04em', background: sc.bg, color: sc.color, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                                            <span style={{ width: 4, height: 4, borderRadius: '50%', background: sc.dot }} />{o.status}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.dark }}>{o.amount}</div>
+                                            );
+                                        })
+                                    ) : (
+                                        Array.from({ length: 5 }).map((_, i) => (
+                                            <div key={i} style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.4fr 1fr 0.7fr 0.85fr', padding: '11px 20px', borderBottom: i < 4 ? `1px solid #F6F4F0` : 'none', alignItems: 'center' }}>
+                                                <div className="shimmer" style={{ width: 40, height: 14 }} />
+                                                <div className="shimmer" style={{ width: '80%', height: 14 }} />
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                                    <div className="shimmer" style={{ width: 22, height: 22, borderRadius: 6 }} />
+                                                    <div className="shimmer" style={{ width: 50, height: 14 }} />
+                                                </div>
+                                                <div className="shimmer" style={{ width: 35, height: 14 }} />
                                                 <div>
-                                                    <span style={{ fontSize: 10, fontWeight: 500, padding: '3px 8px', borderRadius: 20, letterSpacing: '0.04em', background: sc.bg, color: sc.color, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                                        <span style={{ width: 4, height: 4, borderRadius: '50%', background: sc.dot }} />{o.status}
-                                                    </span>
+                                                    <div className="shimmer" style={{ width: 60, height: 18, borderRadius: 20 }} />
                                                 </div>
                                             </div>
-                                        );
-                                    })}
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -848,9 +960,19 @@ export default function ArovaDashboard() {
                                         <div style={{ width: 5, height: 5, borderRadius: '50%', background: COLORS.green, animation: 'pulse 1.5s infinite' }} />Real-time
                                     </div>
                                 </div>
-                                <div style={{ fontSize: 32, fontWeight: 600, color: COLORS.dark, letterSpacing: '-0.03em', marginBottom: 4 }}>{live.liveVisitors}</div>
+                                <div style={{ fontSize: 32, fontWeight: 600, color: COLORS.dark, letterSpacing: '-0.03em', marginBottom: 4 }}>
+                                    {statsLoaded ? (
+                                        live.liveVisitors
+                                    ) : (
+                                        <div className="shimmer" style={{ width: 40, height: 32 }} />
+                                    )}
+                                </div>
                                 <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 12 }}>active sessions right now</div>
-                                <div style={{ display: 'flex', gap: 3 }}>{Array.from({ length: 10 }).map((_, i) => (<div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i < live.liveVisitors ? COLORS.green : '#E8E4DC' }} />))}</div>
+                                <div style={{ display: 'flex', gap: 3 }}>
+                                    {Array.from({ length: 10 }).map((_, i) => (
+                                        <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: statsLoaded && (i < live.liveVisitors) ? COLORS.green : '#E8E4DC' }} className={statsLoaded ? '' : 'shimmer'} />
+                                    ))}
+                                </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3, fontSize: 9.5, color: '#C4C0B8' }}><span>0</span><span>30 max</span></div>
                             </div>
                             <div className="card" style={{ padding: '18px', animation: 'fadeUp 0.5s ease both 0.56s' }}>
@@ -858,28 +980,45 @@ export default function ArovaDashboard() {
                                 <div style={{ position: 'relative', width: 76, height: 76, margin: '0 auto 10px' }}>
                                     <svg viewBox="0 0 76 76" width="76" height="76">
                                         <circle cx="38" cy="38" r="30" fill="none" stroke="#F0ECE6" strokeWidth="5" />
-                                        <circle cx="38" cy="38" r="30" fill="none" stroke={COLORS.green} strokeWidth="5" strokeDasharray="188.4" strokeDashoffset={`${188.4 - (188.4 * live.fulfillmentRate) / 100}`} strokeLinecap="round" />
+                                        <circle cx="38" cy="38" r="30" fill="none" stroke={COLORS.green} strokeWidth="5" strokeDasharray="188.4" strokeDashoffset={`${statsLoaded ? 188.4 - (188.4 * live.fulfillmentRate) / 100 : 188.4}`} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.6s ease' }} />
                                     </svg>
-                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: COLORS.dark }}>{Math.round(live.fulfillmentRate)}%</div>
+                                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: COLORS.dark }}>
+                                        {statsLoaded ? (
+                                            `${Math.round(live.fulfillmentRate)}%`
+                                        ) : (
+                                            <div className="shimmer" style={{ width: 34, height: 16 }} />
+                                        )}
+                                    </div>
                                 </div>
                                 <div style={{ fontSize: 10.5, color: COLORS.textMuted, textAlign: 'center' }}>Fulfillment rate for current orders</div>
                             </div>
                             <div className="card" style={{ padding: '16px', animation: 'fadeUp 0.5s ease both 0.6s' }}>
                                 <div style={{ fontSize: 12.5, fontWeight: 600, color: COLORS.dark, marginBottom: 12 }}>Order Status</div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                                    {[
-                                        { label: 'Delivered', val: live.statusDistribution.Delivered, color: COLORS.blue },
-                                        { label: 'Shipped', val: live.statusDistribution.Shipped, color: COLORS.green },
-                                        { label: 'Processing', val: live.statusDistribution.Processing, color: '#F59E0B' },
-                                        { label: 'Pending', val: live.statusDistribution.Pending, color: COLORS.red },
-                                    ].map(s => (
-                                        <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                                            <span style={{ fontSize: 11.5, color: COLORS.textSub, flex: 1 }}>{s.label}</span>
-                                            <div style={{ width: 52, height: 3, background: '#F0EDE8', borderRadius: 3 }}><div style={{ height: '100%', width: `${s.val}%`, background: s.color, borderRadius: 3 }} /></div>
-                                            <span style={{ fontSize: 11, fontWeight: 500, color: COLORS.dark, minWidth: 24, textAlign: 'right' }}>{Math.round(s.val)}%</span>
-                                        </div>
-                                    ))}
+                                    {statsLoaded ? (
+                                        [
+                                            { label: 'Delivered', val: live.statusDistribution.Delivered, color: COLORS.blue },
+                                            { label: 'Shipped', val: live.statusDistribution.Shipped, color: COLORS.green },
+                                            { label: 'Processing', val: live.statusDistribution.Processing, color: '#F59E0B' },
+                                            { label: 'Pending', val: live.statusDistribution.Pending, color: COLORS.red },
+                                        ].map(s => (
+                                            <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                                                <span style={{ fontSize: 11.5, color: COLORS.textSub, flex: 1 }}>{s.label}</span>
+                                                <div style={{ width: 52, height: 3, background: '#F0EDE8', borderRadius: 3 }}><div style={{ height: '100%', width: `${s.val}%`, background: s.color, borderRadius: 3 }} /></div>
+                                                <span style={{ fontSize: 11, fontWeight: 500, color: COLORS.dark, minWidth: 24, textAlign: 'right' }}>{Math.round(s.val)}%</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        Array.from({ length: 4 }).map((_, i) => (
+                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <div className="shimmer" style={{ width: 6, height: 6, borderRadius: '50%' }} />
+                                                <div className="shimmer" style={{ height: 12, flex: 1 }} />
+                                                <div className="shimmer" style={{ width: 52, height: 3 }} />
+                                                <div className="shimmer" style={{ width: 24, height: 12 }} />
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -408,7 +408,13 @@ export default function ViewUsers() {
                         { label: 'Platinum', val: users.filter(u => u.tier === 'Platinum').length, color: C.purple, bg: C.purpleBg },
                     ].map(s => (
                         <div key={s.label} style={{ background: s.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 14px' }}>
-                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.val}</div>
+                            <div style={{ fontSize: 22, fontWeight: 700, color: s.color, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                                {isLoading ? (
+                                    <div className="shimmer" style={{ width: 60, height: 22, margin: '2px 0' }} />
+                                ) : (
+                                    s.val
+                                )}
+                            </div>
                             <div style={{ fontSize: 11, color: C.textMuted, marginTop: 3 }}>{s.label}</div>
                         </div>
                     ))}
@@ -493,10 +499,30 @@ export default function ViewUsers() {
 
                         {/* Rows */}
                         {isLoading ? (
-                                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                                    <div style={{ fontSize: 12, color: C.textMuted }}>Loading users...</div>
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 0.8fr 0.8fr 0.8fr 0.4fr', padding: '12px 20px', borderBottom: i < 4 ? `1px solid #F6F4F0` : 'none', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <div className="shimmer" style={{ width: 34, height: 34, borderRadius: '50%' }} />
+                                        <div style={{ flex: 1 }}>
+                                            <div className="shimmer" style={{ width: '60%', height: 13, marginBottom: 5 }} />
+                                            <div className="shimmer" style={{ width: '40%', height: 11 }} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="shimmer" style={{ width: 60, height: 18, borderRadius: 20 }} />
+                                    </div>
+                                    <div>
+                                        <div className="shimmer" style={{ width: 55, height: 18, borderRadius: 20 }} />
+                                    </div>
+                                    <div className="shimmer" style={{ width: 25, height: 13 }} />
+                                    <div className="shimmer" style={{ width: 45, height: 13 }} />
+                                    <div className="shimmer" style={{ width: 60, height: 13 }} />
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                        <div className="shimmer" style={{ width: 26, height: 26, borderRadius: 7 }} />
+                                    </div>
                                 </div>
-                            ) : filtered.length === 0 ? (
+                            ))
+                        ) : filtered.length === 0 ? (
                                 <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                                     <div style={{ width: 48, height: 48, borderRadius: 14, background: C.sand, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.textMuted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
@@ -580,7 +606,29 @@ export default function ViewUsers() {
                 ) : (
                     /* GRID VIEW */
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14, animation: 'fadeUp 0.4s ease both 0.14s' }}>
-                        {filtered.map((u) => {
+                        {isLoading ? (
+                            Array.from({ length: 8 }).map((_, i) => (
+                                <div key={i} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: 18 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                                        <div className="shimmer" style={{ width: 46, height: 46, borderRadius: '50%' }} />
+                                        <div className="shimmer" style={{ width: 50, height: 18, borderRadius: 20 }} />
+                                    </div>
+                                    <div className="shimmer" style={{ width: '70%', height: 14, marginBottom: 6 }} />
+                                    <div className="shimmer" style={{ width: '50%', height: 11, marginBottom: 12 }} />
+                                    <div className="shimmer" style={{ width: 60, height: 18, borderRadius: 20, marginBottom: 14 }} />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 30, height: 14, marginBottom: 4 }} />
+                                            <div className="shimmer" style={{ width: 40, height: 10 }} />
+                                        </div>
+                                        <div>
+                                            <div className="shimmer" style={{ width: 45, height: 14, marginBottom: 4 }} />
+                                            <div className="shimmer" style={{ width: 30, height: 10 }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : filtered.map((u) => {
                             const tc = TIER_CONFIG[u.tier];
                             const sc = STATUS_CONFIG[u.status];
                             const ac = AVATAR_COLORS[parseInt(u._id.slice(-4), 16) % AVATAR_COLORS.length] || AVATAR_COLORS[0];
