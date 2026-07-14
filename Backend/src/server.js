@@ -1,14 +1,13 @@
 require('dotenv').config();
-const dns = require('dns');
-if (dns.setDefaultResultOrder) {
-    dns.setDefaultResultOrder('ipv4first');
-}
 const cors = require('cors');
 const express = require('express');
+const morgan = require('morgan');
+
 require('./config/db.config');
 const app = express();
 const PORT = process.env.PORT;
 
+app.use(morgan('dev'));
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

@@ -1,9 +1,9 @@
 import axios from "axios";
 
 // ─── Axios instance with JWT interceptor ──────────────────────────────────────
-export const api = axios.create({ baseURL: import.meta.env.VITE_API_URL, });
+export const api = axios.create({ baseURL: "https://arora-ecommerce.onrender.com/api", });
 
-const ADMIN_BASE = `${import.meta.env.VITE_API_URL}/auth/admin`;
+const ADMIN_BASE = `https://arora-ecommerce.onrender.com/api/auth/admin`;
 
 const getOrCreateSessionId = () => {
     let sid = sessionStorage.getItem('admin_session_id');
@@ -87,7 +87,7 @@ export const AdminOtpVerify = async (OTP: string) => {
     try {
         const email = sessionStorage.getItem("resetEmail") || "";
         console.log("[LOG] [FRONTEND] AdminOtpVerify called. Email:", email, "OTP:", OTP);
-        const res = await api.post(`/auth/admin/VerifyOtp`, { email, OTP: OTP });
+        const res = await api.post(`/auth/admin/VerifyOtp`, { email, OTP: Number(OTP) });
         console.log("[LOG] [FRONTEND] AdminOtpVerify post success, response data:", res.data);
         return res.data;
     } catch (error: any) {
