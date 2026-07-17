@@ -191,7 +191,7 @@ export default function AddUser() {
                     <div style={{ display: 'flex', gap: 10 }}>
                         <button onClick={() => { setForm({ firstName: '', lastName: '', email: '', phone: '', dob: '', gender: '', address: '', city: '', pincode: '', password: '', confirmPassword: '' }); setTier('Standard'); setPrefs(new Set(['order_updates'])); setErrors({}); setSubmitted(false); setStep(1); }}
                             style={{ flex: 1, padding: '10px', background: C.sand, border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: C.textSub, cursor: 'pointer', fontFamily: 'inherit' }}>Add another</button>
-                        <button onClick={() => window.location.href = '/dashboard/users'} style={{ flex: 1, padding: '10px', background: C.dark, border: 'none', borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>View all users →</button>
+                        <button onClick={() => window.location.href = '/dashboard/view-users'} style={{ flex: 1, padding: '10px', background: C.dark, border: 'none', borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>View all users →</button>
                     </div>
                 </div>
             </div>

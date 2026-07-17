@@ -296,7 +296,7 @@ export default function AddAdmin() {
                             style={{ flex: 1, padding: '10px', background: COLORS.sand, border: `1px solid ${COLORS.border}`, borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: COLORS.textSub, cursor: 'pointer', fontFamily: 'inherit' }}>
                             Add another
                         </button>
-                        <button onClick={() => window.location.href = '/dashboard/admins'} style={{ flex: 1, padding: '10px', background: COLORS.dark, border: 'none', borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <button onClick={() => window.location.href = '/dashboard/view-admins'} style={{ flex: 1, padding: '10px', background: COLORS.dark, border: 'none', borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
                             View all admins →
                         </button>
                     </div>

@@ -3,7 +3,9 @@ import { Outlet, useLocation, useNavigate } from 'react-router';
 import Sidebar from './sidebar';
 import { fetchAnalyticsStats, fetchRevenueCharts, exportReport } from '../../../services/dashboard/dashboardService';
 import { fetchNotifications, markNotificationsRead } from '../../../services/notification/notificationService';
-import { getAdminProfile } from '../../../services/auth/authService';
+import { getAdminProfile, fetchAdmins, fetchUsers } from '../../../services/auth/authService';
+import { fetchProducts, fetchCategories } from '../../../services/catalog/catalogService';
+import { fetchAllOrders } from '../../../services/order/orderService';
 import { useConfirm, useToast } from '../../../context/UIContext';
 
 const COLORS = {
@@ -193,6 +195,8 @@ function RevenueSparkline({ sparklinePoints, liveRevenue }: { sparklinePoints?: 
 
 export default function ArovaDashboard() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const isDashboardHome = location.pathname === '/dashboard';
     const confirm = useConfirm();
     const toast = useToast();
 
@@ -215,6 +219,210 @@ export default function ArovaDashboard() {
     const isSm = isMobile;
     const [notifOpen, setNotifOpen] = useState(false);
     const [searchVal, setSearchVal] = useState('');
+    const [searchActive, setSearchActive] = useState(false);
+    const [currentView, setCurrentView] = useState<'dashboard' | 'results'>('dashboard');
+    const [searchData, setSearchData] = useState<{
+        admins: any[];
+        users: any[];
+        products: any[];
+        categories: any[];
+        orders: any[];
+    } | null>(null);
+    const [searchLoading, setSearchLoading] = useState(false);
+    
+    const transitionTimeoutRef = useRef<any>(null);
+
+    useEffect(() => {
+        const isSearching = searchVal.trim().length > 0;
+        
+        if (isSearching && !searchActive) {
+            setSearchActive(true);
+            if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+            transitionTimeoutRef.current = setTimeout(() => {
+                setCurrentView('results');
+            }, 350);
+        } else if (!isSearching && searchActive) {
+            setSearchActive(false);
+            setCurrentView('dashboard');
+        }
+    }, [searchVal, searchActive]);
+
+    useEffect(() => {
+        setSearchVal('');
+        setSearchActive(false);
+        setCurrentView('dashboard');
+    }, [location.pathname]);
+
+    const getGreetingDetails = () => {
+        const hour = new Date().getHours();
+        if (hour >= 5 && hour < 12) {
+            return {
+                text: "Good Morning",
+                emoji: "🌅",
+                icon: (
+                    <svg width="52" height="52" viewBox="0 0 52 52" style={{ overflow: 'visible' }}>
+                        <defs>
+                            <radialGradient id="coreGradMorning" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#FFF59D" /><stop offset="60%" stopColor="#FFB74D" /><stop offset="100%" stopColor="#E64A19" /></radialGradient>
+                            <radialGradient id="glowGradMorning" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#FFB74D" stopOpacity="0.4" /><stop offset="100%" stopColor="#E64A19" stopOpacity="0" /></radialGradient>
+                            <filter id="softGlow"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+                        </defs>
+                        <circle cx="26" cy="26" r="23" fill="url(#glowGradMorning)" />
+                        <g>{Array.from({ length: 8 }).map((_, i) => <rect key={i} x="24.5" y="2" width="3" height="9" rx="1.5" fill="#FF8F00" opacity="0.6" style={{ transformOrigin: '26px 26px', transform: `rotate(${i * 45}deg)` }} />)}</g>
+                        <circle cx="26" cy="26" r="13" fill="url(#coreGradMorning)" filter="url(#softGlow)" />
+                        <circle cx="26" cy="26" r="13" fill="none" stroke="#E64A19" strokeWidth="1.5" opacity="0.25" />
+                    </svg>
+                )
+            };
+        } else if (hour >= 12 && hour < 17) {
+            return {
+                text: "Good Afternoon",
+                emoji: "☀️",
+                icon: (
+                    <svg width="52" height="52" viewBox="0 0 52 52" style={{ overflow: 'visible' }}>
+                        <defs>
+                            <radialGradient id="coreGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#FFF176" /><stop offset="40%" stopColor="#FFD600" /><stop offset="100%" stopColor="#FF8F00" /></radialGradient>
+                            <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#FFD600" stopOpacity="0.4" /><stop offset="100%" stopColor="#FF6F00" stopOpacity="0" /></radialGradient>
+                            <filter id="softGlow"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+                        </defs>
+                        <circle cx="26" cy="26" r="23" fill="url(#glowGrad)" />
+                        <g>{Array.from({ length: 8 }).map((_, i) => <rect key={i} x="24.5" y="2" width="3" height="9" rx="1.5" fill="#FFB300" opacity="0.6" style={{ transformOrigin: '26px 26px', transform: `rotate(${i * 45}deg)` }} />)}</g>
+                        <g>{Array.from({ length: 8 }).map((_, i) => <rect key={i} x="25" y="8" width="2" height="7" rx="1" fill="#FFF176" opacity="0.35" style={{ transformOrigin: '26px 26px', transform: `rotate(${i * 45 + 22.5}deg)` }} />)}</g>
+                        <circle cx="26" cy="26" r="13" fill="url(#coreGrad)" filter="url(#softGlow)" />
+                        <ellipse cx="22" cy="22" rx="4" ry="3" fill="#FFF9C4" opacity="0.45" />
+                        <circle cx="26" cy="26" r="13" fill="none" stroke="#FF6F00" strokeWidth="1.5" opacity="0.25" />
+                    </svg>
+                )
+            };
+        } else if (hour >= 17 && hour < 21) {
+            return {
+                text: "Good Evening",
+                emoji: "🌇",
+                icon: (
+                    <svg width="52" height="52" viewBox="0 0 52 52" style={{ overflow: 'visible' }}>
+                        <defs>
+                            <radialGradient id="coreGradEvening" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#FFAB91" /><stop offset="60%" stopColor="#D84315" /><stop offset="100%" stopColor="#4A148C" /></radialGradient>
+                            <radialGradient id="glowGradEvening" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#D84315" stopOpacity="0.4" /><stop offset="100%" stopColor="#4A148C" stopOpacity="0" /></radialGradient>
+                            <filter id="softGlow"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+                        </defs>
+                        <circle cx="26" cy="26" r="23" fill="url(#glowGradEvening)" />
+                        <g>{Array.from({ length: 8 }).map((_, i) => <rect key={i} x="24.5" y="2" width="3" height="9" rx="1.5" fill="#FF7043" opacity="0.5" style={{ transformOrigin: '26px 26px', transform: `rotate(${i * 45}deg)` }} />)}</g>
+                        <circle cx="26" cy="26" r="13" fill="url(#coreGradEvening)" filter="url(#softGlow)" />
+                        <circle cx="26" cy="26" r="13" fill="none" stroke="#D84315" strokeWidth="1.5" opacity="0.25" />
+                    </svg>
+                )
+            };
+        } else {
+            return {
+                text: "Good Night",
+                emoji: "🌙",
+                icon: (
+                    <svg width="52" height="52" viewBox="0 0 52 52" style={{ overflow: 'visible' }}>
+                        <defs>
+                            <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#B39DDB" stopOpacity="0.4" /><stop offset="100%" stopColor="#311B92" stopOpacity="0" /></radialGradient>
+                            <filter id="softGlow"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+                        </defs>
+                        <circle cx="26" cy="26" r="23" fill="url(#moonGlow)" />
+                        <path d="M30 14 A 12 12 0 1 0 38 28 A 9 9 0 1 1 30 14" fill="#FFE082" filter="url(#softGlow)" />
+                        <circle cx="16" cy="18" r="1" fill="#fff" opacity="0.8" />
+                        <circle cx="20" cy="12" r="1.5" fill="#fff" opacity="0.9" />
+                        <circle cx="36" cy="16" r="1" fill="#fff" opacity="0.8" />
+                    </svg>
+                )
+            };
+        }
+    };
+
+    useEffect(() => {
+        const isSearching = searchVal.trim().length > 0;
+        if (isSearching && !searchData && !searchLoading) {
+            setSearchLoading(true);
+            Promise.allSettled([
+                fetchAdmins(),
+                fetchUsers(),
+                fetchProducts({ limit: 1000 }),
+                fetchCategories(),
+                fetchAllOrders()
+            ]).then(([adminsRes, usersRes, productsRes, categoriesRes, ordersRes]) => {
+                const admins = adminsRes.status === 'fulfilled' && adminsRes.value?.status === 200 && Array.isArray(adminsRes.value.result)
+                    ? adminsRes.value.result.map((a: any) => ({
+                        id: a._id?.slice(-5).toUpperCase() || 'ADMIN',
+                        name: `${a.first_name || ''} ${a.last_name || ''}`.trim() || 'Admin',
+                        subtitle: a.email || 'Administrator',
+                        type: 'Admin',
+                        icon: '👤'
+                    }))
+                    : [];
+                
+                const users = usersRes.status === 'fulfilled' && usersRes.value?.status === 200 && Array.isArray(usersRes.value.result)
+                    ? usersRes.value.result.map((u: any) => ({
+                        id: u._id?.slice(-5).toUpperCase() || 'USER',
+                        name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'User',
+                        subtitle: u.email || 'N/A',
+                        type: 'User',
+                        icon: '👥'
+                    }))
+                    : [];
+                    
+                const products = productsRes.status === 'fulfilled' && productsRes.value?.status === 200 && Array.isArray(productsRes.value.result?.products)
+                    ? productsRes.value.result.products.map((p: any) => ({
+                        id: p._id?.slice(-5).toUpperCase() || 'PRODUCT',
+                        name: p.product_name || 'Product',
+                        subtitle: p.price ? `₹${p.price.toLocaleString()}` : 'N/A',
+                        type: 'Product',
+                        icon: '📦'
+                    }))
+                    : [];
+                    
+                const categories = categoriesRes.status === 'fulfilled' && categoriesRes.value?.status === 200 && Array.isArray(categoriesRes.value.result)
+                    ? categoriesRes.value.result.map((c: any) => ({
+                        id: c._id?.slice(-5).toUpperCase() || 'CATEGORY',
+                        name: c.category_name || 'Category',
+                        subtitle: c.isActive ? 'Active' : 'Inactive',
+                        type: 'Category',
+                        icon: '📂'
+                    }))
+                    : [];
+                    
+                const orders = ordersRes.status === 'fulfilled' && ordersRes.value?.status === 200 && Array.isArray(ordersRes.value.result)
+                    ? ordersRes.value.result.map((ord: any) => ({
+                        id: ord._id?.slice(-8).toUpperCase() || 'ORD-0000',
+                        name: `#${ord._id?.slice(-8).toUpperCase() || 'ORD-0000'}`,
+                        subtitle: ord.status || 'Processing',
+                        type: 'Order',
+                        icon: '🧾'
+                    }))
+                    : [];
+                    
+                setSearchData({ admins, users, products, categories, orders });
+                setSearchLoading(false);
+            }).catch(err => {
+                console.error("Failed to load search data", err);
+                setSearchLoading(false);
+            });
+        }
+    }, [searchVal, searchData, searchLoading]);
+
+    const getFilteredResults = () => {
+        if (!searchData) return [];
+        const query = searchVal.trim().toLowerCase();
+        if (!query) return [];
+        
+        const all = [
+            ...searchData.admins,
+            ...searchData.users,
+            ...searchData.products,
+            ...searchData.categories,
+            ...searchData.orders
+        ];
+        
+        return all.filter(item => 
+            item.name.toLowerCase().includes(query) ||
+            item.subtitle.toLowerCase().includes(query) ||
+            item.id.toLowerCase().includes(query)
+        );
+    };
+
+    const filteredResults = getFilteredResults();
     const [chartView, setChartView] = useState<'weekly' | 'monthly'>('weekly');
     const [hoveredBar, setHoveredBar] = useState<number | null>(null);
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
@@ -379,8 +587,7 @@ export default function ArovaDashboard() {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const location = useLocation();
-    const isDashboardHome = location.pathname === '/dashboard';
+
 
     const effectiveChartData = chartData.length > 0 ? chartData : (chartView === 'weekly' ? [0,0,0,0,0,0,0] : [0,0,0,0,0,0,0,0,0,0,0,0]);
     const effectiveLabels = chartLabels.length > 0 ? chartLabels : (chartView === 'weekly' ? ['M', 'T', 'W', 'T', 'F', 'S', 'S'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
@@ -448,6 +655,62 @@ export default function ArovaDashboard() {
                 
                 .chart-products-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 18px; }
                 @media (min-width: 1024px) { .chart-products-grid { grid-template-columns: 1.6fr 1fr; } }
+
+                /* Search animations */
+                .search-item-stagger {
+                    animation: staggerFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+                }
+                .search-item-stagger:nth-child(1) { animation-delay: 0s; }
+                .search-item-stagger:nth-child(2) { animation-delay: 0.07s; }
+                .search-item-stagger:nth-child(3) { animation-delay: 0.14s; }
+                .search-item-stagger:nth-child(4) { animation-delay: 0.21s; }
+                .search-item-stagger:nth-child(5) { animation-delay: 0.28s; }
+
+                .search-mode-leaving .search-item-stagger {
+                    animation: staggerFadeOut 0.35s cubic-bezier(0.4, 0, 0.2, 1) both !important;
+                }
+                .search-mode-leaving .search-item-stagger:nth-child(1) { animation-delay: 0s !important; }
+                .search-mode-leaving .search-item-stagger:nth-child(2) { animation-delay: 0.05s !important; }
+                .search-mode-leaving .search-item-stagger:nth-child(3) { animation-delay: 0.15s !important; }
+                .search-mode-leaving .search-item-stagger:nth-child(4) { animation-delay: 0.2s !important; }
+                .search-mode-leaving .search-item-stagger:nth-child(5) { animation-delay: 0.25s !important; }
+
+                @keyframes staggerFadeIn {
+                    from {
+                        opacity: 0;
+                        transform: scale(0.98) translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: scale(1) translateY(0);
+                    }
+                }
+
+                @keyframes staggerFadeOut {
+                    from {
+                        opacity: 1;
+                        transform: scale(1) translateY(0);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: scale(0.98) translateY(-20px);
+                    }
+                }
+
+                /* Search Results row styling */
+                .search-result-item {
+                    transition: all 0.2s ease;
+                }
+                .search-result-item:hover {
+                    border-color: #2A6344 !important;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .search-result-item:hover .search-view-btn {
+                    background: #2A6344 !important;
+                    border-color: #2A6344 !important;
+                    color: #fff !important;
+                }
             `}</style>
 
 
@@ -470,7 +733,18 @@ export default function ArovaDashboard() {
                         {!isMobile && (
                             <div style={{ position: 'relative' }}>
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B8B4AD" strokeWidth="2" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
-                                <input className="search-box" type="text" placeholder="Search anything..." value={searchVal} onChange={e => setSearchVal(e.target.value)} />
+                                <input 
+                                    className="search-box" 
+                                    type="text" 
+                                    placeholder="Search admins, users, products..." 
+                                    value={searchVal} 
+                                    onChange={e => setSearchVal(e.target.value)} 
+                                    onKeyDown={e => {
+                                        if (e.key === 'Escape') {
+                                            setSearchVal('');
+                                        }
+                                    }}
+                                />
                             </div>
                         )}
                     </div>
@@ -534,29 +808,160 @@ export default function ArovaDashboard() {
 
                 {/* Body */}
                 <div className="scroll-area" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '20px 14px' : '26px 26px' }}>
-                    {!isDashboardHome ? <Outlet /> : <>
-                    {/* Page header */}
-                    <div style={{ marginBottom: 22, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, animation: 'fadeUp 0.4s ease both', position: 'relative', zIndex: 50 }}>
+                    
+                    {/* Search Results section */}
+                    {currentView === 'results' && (
+                        <div style={{ animation: 'fadeIn 0.3s ease both' }}>
+                            {searchLoading ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Searching database...</div>
+                                    {Array.from({ length: 3 }).map((_, i) => (
+                                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 12 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                                                <div className="shimmer" style={{ width: 36, height: 36, borderRadius: 10 }} />
+                                                <div style={{ flex: 1 }}>
+                                                    <div className="shimmer" style={{ width: '40%', height: 14, marginBottom: 6 }} />
+                                                    <div className="shimmer" style={{ width: '25%', height: 11 }} />
+                                                </div>
+                                            </div>
+                                            <div className="shimmer" style={{ width: 60, height: 28, borderRadius: 8 }} />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : filteredResults.length === 0 ? (
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '80px 24px',
+                                    background: COLORS.white,
+                                    border: `1px solid ${COLORS.border}`,
+                                    borderRadius: 14,
+                                    textAlign: 'center'
+                                }}>
+                                    <div style={{
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: 16,
+                                        background: COLORS.sand,
+                                        border: `1px solid ${COLORS.border}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: 24,
+                                        marginBottom: 16
+                                    }}>
+                                        🔍
+                                    </div>
+                                    <h3 style={{ fontSize: 15, fontWeight: 600, color: COLORS.dark, marginBottom: 4 }}>No results found</h3>
+                                    <p style={{ fontSize: 12.5, color: COLORS.textMuted }}>Try another keyword.</p>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+                                        Search Results ({filteredResults.length})
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                        {filteredResults.map((item, idx) => {
+                                            let typeColor = COLORS.dark;
+                                            let typeBg = COLORS.sand;
+                                            if (item.type === 'Admin') { typeColor = '#7C3AED'; typeBg = '#F3E8FF'; }
+                                            else if (item.type === 'User') { typeColor = COLORS.blue; typeBg = COLORS.blueBg; }
+                                            else if (item.type === 'Product') { typeColor = COLORS.amber; typeBg = COLORS.amberBg; }
+                                            else if (item.type === 'Category') { typeColor = COLORS.green; typeBg = COLORS.greenBg; }
+                                            else if (item.type === 'Order') { typeColor = COLORS.red; typeBg = COLORS.redBg; }
+
+                                            return (
+                                                <div key={`${item.type}-${item.id}-${idx}`} 
+                                                    className="search-result-item"
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        padding: '12px 18px',
+                                                        background: COLORS.white,
+                                                        border: `1px solid ${COLORS.border}`,
+                                                        borderRadius: 12,
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    onClick={() => {
+                                                        if (item.type === 'Admin') navigate('/dashboard/view-admins');
+                                                        else if (item.type === 'User') navigate('/dashboard/view-users');
+                                                        else if (item.type === 'Product') navigate('/dashboard/view-products');
+                                                        else if (item.type === 'Category') navigate('/dashboard/categories');
+                                                        else if (item.type === 'Order') navigate('/dashboard/orders');
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 6,
+                                                            padding: '4px 10px',
+                                                            borderRadius: 20,
+                                                            background: typeBg,
+                                                            color: typeColor,
+                                                            fontSize: 11,
+                                                            fontWeight: 600,
+                                                            flexShrink: 0
+                                                        }}>
+                                                            <span>{item.icon}</span>
+                                                            <span>{item.type}</span>
+                                                        </div>
+                                                        
+                                                        <div style={{ minWidth: 0 }}>
+                                                            <div style={{ fontSize: 13.5, fontWeight: 600, color: COLORS.dark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                                {item.name}
+                                                            </div>
+                                                            <div style={{ fontSize: 11.5, color: COLORS.textSub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>
+                                                                {item.subtitle}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <button style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 4,
+                                                        padding: '6px 12px',
+                                                        background: COLORS.sand,
+                                                        border: `1px solid ${COLORS.border}`,
+                                                        borderRadius: 8,
+                                                        fontSize: 11.5,
+                                                        fontWeight: 500,
+                                                        color: COLORS.textSub,
+                                                        cursor: 'pointer',
+                                                        fontFamily: 'inherit',
+                                                        flexShrink: 0
+                                                    }} className="search-view-btn">
+                                                        View <span style={{ fontSize: 10 }}>→</span>
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {!isDashboardHome ? (
+                        <div className={`search-item-stagger ${searchActive ? 'search-mode-leaving' : ''}`} style={{ display: currentView === 'results' ? 'none' : 'block' }}>
+                            <Outlet />
+                        </div>
+                    ) : (
+                        <div className={searchActive ? "search-mode-leaving" : ""} style={{ display: currentView === 'results' ? 'none' : 'block' }}>
+                            {/* Page header */}
+                            <div className="search-item-stagger" style={{ marginBottom: 22, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, position: 'relative', zIndex: 50 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                             <div style={{ position: 'relative', width: 52, height: 52, flexShrink: 0 }}>
-                                <svg width="52" height="52" viewBox="0 0 52 52" style={{ overflow: 'visible' }}>
-                                    <defs>
-                                        <radialGradient id="coreGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#FFF176" /><stop offset="40%" stopColor="#FFD600" /><stop offset="100%" stopColor="#FF8F00" /></radialGradient>
-                                        <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#FFD600" stopOpacity="0.4" /><stop offset="100%" stopColor="#FF6F00" stopOpacity="0" /></radialGradient>
-                                        <filter id="softGlow"><feGaussianBlur stdDeviation="2.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-                                    </defs>
-                                    <circle cx="26" cy="26" r="23" fill="url(#glowGrad)" />
-                                    <g>{Array.from({ length: 8 }).map((_, i) => <rect key={i} x="24.5" y="2" width="3" height="9" rx="1.5" fill="#FFB300" opacity="0.6" style={{ transformOrigin: '26px 26px', transform: `rotate(${i * 45}deg)` }} />)}</g>
-                                    <g>{Array.from({ length: 8 }).map((_, i) => <rect key={i} x="25" y="8" width="2" height="7" rx="1" fill="#FFF176" opacity="0.35" style={{ transformOrigin: '26px 26px', transform: `rotate(${i * 45 + 22.5}deg)` }} />)}</g>
-                                    <circle cx="26" cy="26" r="13" fill="url(#coreGrad)" filter="url(#softGlow)" />
-                                    <ellipse cx="22" cy="22" rx="4" ry="3" fill="#FFF9C4" opacity="0.45" />
-                                    <circle cx="26" cy="26" r="13" fill="none" stroke="#FF6F00" strokeWidth="1.5" opacity="0.25" />
-                                </svg>
+                                {getGreetingDetails().icon}
                             </div>
                             <div>
                                 <div style={{ fontSize: 10.5, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600, marginBottom: 5 }}>Overview</div>
                                 <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: isMobile ? 22 : 26, fontWeight: 500, color: COLORS.dark, letterSpacing: '-0.02em' }}>
-                                    Good morning, {adminProfile ? adminProfile.first_name : 'Admin'} ✦
+                                    {getGreetingDetails().text}, {adminProfile ? adminProfile.first_name : 'Admin'} {getGreetingDetails().emoji}
                                 </h1>
                             </div>
                         </div>
@@ -589,7 +994,7 @@ export default function ArovaDashboard() {
                     </div>
 
                     {/* Stats Cards Row */}
-                    <div className="stats-grid">
+                    <div className="search-item-stagger stats-grid">
                         {[
                             { label: 'Total Admins', value: live.admins, format: (v: number) => Math.round(v).toString(), change: 'admins', up: true, sub: 'registered admins', icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={COLORS.green} strokeWidth="1.7"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>, accent: COLORS.green, accentBg: COLORS.greenBg, accentBorder: COLORS.greenBorder },
                             { label: 'Total Users', value: live.users, format: (v: number) => Math.round(v).toLocaleString(), change: 'users', up: true, sub: 'registered users', icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={COLORS.blue} strokeWidth="1.7"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></svg>, accent: COLORS.blue, accentBg: COLORS.blueBg, accentBorder: '#BFCEF8' },
@@ -626,9 +1031,9 @@ export default function ArovaDashboard() {
                     </div>
 
                     {/* Earnings + Pending + Revenue Row */}
-                    <div className="earnings-grid">
+                    <div className="search-item-stagger earnings-grid">
                         {/* Total Earnings */}
-                        <div className="card" style={{ padding: '20px', background: '#1A1A1A', borderColor: '#2A2A2A', animation: 'fadeUp 0.5s ease both 0.2s', position: 'relative', overflow: 'hidden' }}>
+                        <div className="card" style={{ padding: '20px', background: '#1A1A1A', borderColor: '#2A2A2A', position: 'relative', overflow: 'hidden' }}>
                             <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(42,99,68,0.15)' }} />
                             <div style={{ position: 'absolute', bottom: -30, left: -10, width: 80, height: 80, borderRadius: '50%', background: 'rgba(72,168,122,0.08)' }} />
                             <div style={{ position: 'relative', zIndex: 1 }}>
@@ -666,7 +1071,7 @@ export default function ArovaDashboard() {
                         </div>
 
                         {/* Pending Orders */}
-                        <div className="card" style={{ padding: '20px', animation: 'fadeUp 0.5s ease both 0.28s' }}>
+                        <div className="card" style={{ padding: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                                 <div style={{ fontSize: 10.5, color: COLORS.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Pending Orders</div>
                                 <div style={{ padding: '4px 10px', background: COLORS.amberBg, border: `1px solid #F5D99A`, borderRadius: 20, fontSize: 10.5, color: COLORS.amber, fontWeight: 500 }}>Needs action</div>
@@ -722,7 +1127,7 @@ export default function ArovaDashboard() {
                         </div>
 
                         {/* Revenue */}
-                        <div className="card" style={{ padding: '20px', animation: 'fadeUp 0.5s ease both 0.34s' }}>
+                        <div className="card" style={{ padding: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
                                 <div>
                                     <div style={{ fontSize: 10.5, color: COLORS.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4 }}>Revenue</div>
@@ -763,9 +1168,9 @@ export default function ArovaDashboard() {
                     </div>
 
                     {/* Chart + Top Products */}
-                    <div className="chart-products-grid">
+                    <div className="search-item-stagger chart-products-grid">
                         {/* Sales Overview */}
-                        <div className="card" style={{ padding: '20px', animation: 'fadeUp 0.5s ease both 0.38s' }}>
+                        <div className="card" style={{ padding: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
                                 <div>
                                     <div style={{ fontSize: 13.5, fontWeight: 600, color: COLORS.dark, marginBottom: 2 }}>Sales Overview</div>
@@ -837,7 +1242,7 @@ export default function ArovaDashboard() {
                         </div>
 
                         {/* Top Products */}
-                        <div className="card" style={{ padding: '20px', animation: 'fadeUp 0.5s ease both 0.44s' }}>
+                        <div className="card" style={{ padding: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                                 <div>
                                     <div style={{ fontSize: 13.5, fontWeight: 600, color: COLORS.dark, marginBottom: 2 }}>Top Products</div>
@@ -891,8 +1296,8 @@ export default function ArovaDashboard() {
                     </div>
 
                     {/* Orders Table + Quick Stats */}
-                    <div style={{ display: 'grid', gridTemplateColumns: isSm ? '1fr' : '1fr 260px', gap: isSm ? 10 : 16, marginBottom: 18 }}>
-                        <div className="card" style={{ overflow: 'hidden', animation: 'fadeUp 0.5s ease both 0.48s' }}>
+                    <div className="search-item-stagger" style={{ display: 'grid', gridTemplateColumns: isSm ? '1fr' : '1fr 260px', gap: isSm ? 10 : 16, marginBottom: 18 }}>
+                        <div className="card" style={{ overflow: 'hidden' }}>
                             <div style={{ padding: '16px 20px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid #F6F4F0` }}>
                                 <div>
                                     <div style={{ fontSize: 13.5, fontWeight: 600, color: COLORS.dark }}>Recent Orders</div>
@@ -953,7 +1358,7 @@ export default function ArovaDashboard() {
                             </div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            <div className="card" style={{ padding: '18px', animation: 'fadeUp 0.5s ease both 0.52s' }}>
+                            <div className="card" style={{ padding: '18px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                                     <div style={{ fontSize: 12.5, fontWeight: 600, color: COLORS.dark }}>Live Visitors</div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: COLORS.green, fontWeight: 500 }}>
@@ -975,7 +1380,7 @@ export default function ArovaDashboard() {
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3, fontSize: 9.5, color: '#C4C0B8' }}><span>0</span><span>30 max</span></div>
                             </div>
-                            <div className="card" style={{ padding: '18px', animation: 'fadeUp 0.5s ease both 0.56s' }}>
+                            <div className="card" style={{ padding: '18px' }}>
                                 <div style={{ fontSize: 12.5, fontWeight: 600, color: COLORS.dark, marginBottom: 14 }}>Fulfillment Rate</div>
                                 <div style={{ position: 'relative', width: 76, height: 76, margin: '0 auto 10px' }}>
                                     <svg viewBox="0 0 76 76" width="76" height="76">
@@ -992,7 +1397,7 @@ export default function ArovaDashboard() {
                                 </div>
                                 <div style={{ fontSize: 10.5, color: COLORS.textMuted, textAlign: 'center' }}>Fulfillment rate for current orders</div>
                             </div>
-                            <div className="card" style={{ padding: '16px', animation: 'fadeUp 0.5s ease both 0.6s' }}>
+                            <div className="card" style={{ padding: '16px' }}>
                                 <div style={{ fontSize: 12.5, fontWeight: 600, color: COLORS.dark, marginBottom: 12 }}>Order Status</div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                                     {statsLoaded ? (
@@ -1024,7 +1429,7 @@ export default function ArovaDashboard() {
                         </div>
                     </div>
                     <div style={{ height: 16 }} />
-                    </>}
+                    </div>)}
                 </div>
             </div>
 

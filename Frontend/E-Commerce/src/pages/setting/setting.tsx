@@ -1067,10 +1067,74 @@ function ApiTab() {
     );
 }
 
+// ─── SKELETON LOADER ───────────────────────────────────────────────────────
+function SettingsSkeleton() {
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, animation: 'fadeIn 0.3s ease both' }}>
+            {/* Card 1 */}
+            <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ padding: '16px 22px', borderBottom: `1px solid #F0ECE6`, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div className="shimmer" style={{ width: 32, height: 32, borderRadius: 8 }} />
+                    <div style={{ flex: 1 }}>
+                        <div className="shimmer" style={{ width: '150px', height: 14, marginBottom: 6, borderRadius: 4 }} />
+                        <div className="shimmer" style={{ width: '220px', height: 11, borderRadius: 3 }} />
+                    </div>
+                </div>
+                <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div className="setting-form-grid">
+                        <div>
+                            <div className="shimmer" style={{ width: '80px', height: 12, marginBottom: 8, borderRadius: 3 }} />
+                            <div className="shimmer" style={{ width: '100%', height: 38, borderRadius: 9 }} />
+                        </div>
+                        <div>
+                            <div className="shimmer" style={{ width: '80px', height: 12, marginBottom: 8, borderRadius: 3 }} />
+                            <div className="shimmer" style={{ width: '100%', height: 38, borderRadius: 9 }} />
+                        </div>
+                    </div>
+                    <div className="setting-form-grid">
+                        <div>
+                            <div className="shimmer" style={{ width: '100px', height: 12, marginBottom: 8, borderRadius: 3 }} />
+                            <div className="shimmer" style={{ width: '100%', height: 38, borderRadius: 9 }} />
+                        </div>
+                        <div>
+                            <div className="shimmer" style={{ width: '100px', height: 12, marginBottom: 8, borderRadius: 3 }} />
+                            <div className="shimmer" style={{ width: '100%', height: 38, borderRadius: 9 }} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Card 2 */}
+            <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ padding: '16px 22px', borderBottom: `1px solid #F0ECE6`, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div className="shimmer" style={{ width: 32, height: 32, borderRadius: 8 }} />
+                    <div style={{ flex: 1 }}>
+                        <div className="shimmer" style={{ width: '130px', height: 14, marginBottom: 6, borderRadius: 4 }} />
+                        <div className="shimmer" style={{ width: '180px', height: 11, borderRadius: 3 }} />
+                    </div>
+                </div>
+                <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div className="setting-form-grid">
+                        <div>
+                            <div className="shimmer" style={{ width: '70px', height: 12, marginBottom: 8, borderRadius: 3 }} />
+                            <div className="shimmer" style={{ width: '100%', height: 38, borderRadius: 9 }} />
+                        </div>
+                        <div>
+                            <div className="shimmer" style={{ width: '70px', height: 12, marginBottom: 8, borderRadius: 3 }} />
+                            <div className="shimmer" style={{ width: '100%', height: 38, borderRadius: 9 }} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── ROOT COMPONENT ────────────────────────────────────────────────────────
 export default function Settings() {
     const [activeTab, setActiveTab] = useState<TabId>('general');
     const [saved, setSaved] = useState(false);
+    const [loading, setLoading] = useState(true);
     const location = useLocation();
 
     useEffect(() => {
@@ -1080,6 +1144,14 @@ export default function Settings() {
             setActiveTab(tab);
         }
     }, [location.search]);
+
+    useEffect(() => {
+        setLoading(true);
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [activeTab]);
 
     const tabs: { id: TabId; label: string }[] = [
         { id: 'general', label: 'General' },
@@ -1171,12 +1243,18 @@ export default function Settings() {
 
                 {/* Tab Content */}
                 <div style={{ animation: 'fadeUp 0.35s ease both' }}>
-                    {activeTab === 'general' && <GeneralTab />}
-                    {activeTab === 'profile' && <ProfileTab />}
-                    {activeTab === 'notifications' && <NotificationsTab />}
-                    {activeTab === 'security' && <SecurityTab />}
-                    {activeTab === 'billing' && <BillingTab />}
-                    {activeTab === 'api' && <ApiTab />}
+                    {loading ? (
+                        <SettingsSkeleton />
+                    ) : (
+                        <>
+                            {activeTab === 'general' && <GeneralTab />}
+                            {activeTab === 'profile' && <ProfileTab />}
+                            {activeTab === 'notifications' && <NotificationsTab />}
+                            {activeTab === 'security' && <SecurityTab />}
+                            {activeTab === 'billing' && <BillingTab />}
+                            {activeTab === 'api' && <ApiTab />}
+                        </>
+                    )}
                 </div>
 
                 <div style={{ height: 32 }} />

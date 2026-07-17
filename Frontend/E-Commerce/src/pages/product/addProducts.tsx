@@ -583,7 +583,7 @@ export default function AddProduct() {
                         {!isEdit && (
                             <button onClick={() => { setForm(INIT); setStep(1); setSubmitted(false); setNewFiles([]); }} style={{ padding: '10px 22px', background: COLORS.dark, border: 'none', borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>Add Another</button>
                         )}
-                        <button onClick={() => window.location.href = '/dashboard/products'} style={{ padding: '10px 22px', background: COLORS.sand, border: `1px solid ${COLORS.border}`, borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: COLORS.textSub, cursor: 'pointer', fontFamily: 'inherit' }}>View Products</button>
+                        <button onClick={() => window.location.href = '/dashboard/view-products'} style={{ padding: '10px 22px', background: COLORS.sand, border: `1px solid ${COLORS.border}`, borderRadius: 9, fontSize: 12.5, fontWeight: 500, color: COLORS.textSub, cursor: 'pointer', fontFamily: 'inherit' }}>View Products</button>
                     </div>
                 </div>
             </div>

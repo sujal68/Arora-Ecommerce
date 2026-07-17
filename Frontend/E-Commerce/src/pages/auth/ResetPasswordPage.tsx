@@ -710,7 +710,7 @@ export default function ResetPasswordPage() {
 
                         {/* Back */}
                         <div className="fr" style={{ textAlign: 'center' }}>
-                            <Link to="/verify-otp" style={{
+                            <Link to="/login" style={{
                                 fontSize: 13, color: '#6A6560', textDecoration: 'none',
                                 display: 'inline-flex', alignItems: 'center', gap: 6,
                                 transition: 'color 0.2s',
@@ -721,7 +721,7 @@ export default function ResetPasswordPage() {
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M19 12H5M12 19l-7-7 7-7" />
                                 </svg>
-                                Back to OTP verification
+                                Back to Login
                             </Link>
                         </div>
                     </div>
